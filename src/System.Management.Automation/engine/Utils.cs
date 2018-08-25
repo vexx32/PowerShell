@@ -178,6 +178,30 @@ namespace System.Management.Automation
             return true;
         }
 
+        internal static bool TryConvertDecimal(BigInteger value, out decimal outValue)
+        {
+            if (value < (BigInteger)decimal.MinValue || value > (BigInteger)decimal.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (decimal)value;
+            return true;
+        }
+
+        internal static bool TryConvertDouble(BigInteger value, out double outValue)
+        {
+            if (value < (BigInteger)double.MinValue || value > (BigInteger)double.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (double)value;
+            return true;
+        }
+
         // From System.Web.Util.HashCodeCombiner
         internal static int CombineHashCodes(int h1, int h2)
         {
