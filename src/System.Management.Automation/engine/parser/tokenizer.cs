@@ -3349,16 +3349,16 @@ namespace System.Management.Automation.Language
                                         result = u;
                                         return true;
                                     }
-                                    else if (Utils.TryConvertUInt64(d, out ulong ull))
+                                    else if (Utils.TryConvertUInt64(d, out ulong ul))
                                     {
-                                        result = ull;
+                                        result = ul;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedLong:
-                                    if (Utils.TryConvertUInt64(d, out ulong ul))
+                                    if (Utils.TryConvertUInt64(d, out ulong ul2))
                                     {
-                                        result = ul;
+                                        result = ul2;
                                         return true;
                                     }
                                     break;
@@ -3400,10 +3400,17 @@ namespace System.Management.Automation.Language
                             strNum = newSpan;
                         }
 
-                        // If we have a hex literal denoting int64, treat it as such
-                        if (strNum.Length > 8 && strNum.Length <= 16 && suffix == NumberSuffixFlags.None)
+                        // If we have a hex literal denoting int64 or decimal, treat it as such
+                        if (suffix == NumberSuffixFlags.None)
                         {
-                            suffix = NumberSuffixFlags.Long;
+                            if (strNum.Length > 8 && strNum.Length <= 16)
+                            {
+                                suffix = NumberSuffixFlags.Long;
+                            }
+                            else if (strNum.Length > 16 && strNum.Length <= 24)
+                            {
+                                suffix = NumberSuffixFlags.Decimal;
+                            }
                         }
                     }
 
@@ -3450,6 +3457,13 @@ namespace System.Management.Automation.Language
                                     return true;
                                 }
                                 break;
+                            case NumberSuffixFlags.Decimal:
+                                if (Utils.TryConvertDecimal(bigValue, out decimal d))
+                                {
+                                    result = d;
+                                    return true;
+                                }
+                                break;
                             // No suffix specified; we have to work out the appropriate data type
                             case NumberSuffixFlags.None:
                                 if (Utils.TryConvertInt32(bigValue, out int i))
@@ -3457,14 +3471,14 @@ namespace System.Management.Automation.Language
                                     result = i;
                                     return true;
                                 }
-                                else if (Utils.TryConvertInt64(bigValue, out long ll))
+                                else if (Utils.TryConvertInt64(bigValue, out long l2))
                                 {
-                                    result = ll;
+                                    result = l2;
                                     return true;
                                 }
-                                else if (Utils.TryConvertDecimal(bigValue, out decimal d))
+                                else if (Utils.TryConvertDecimal(bigValue, out decimal dml))
                                 {
-                                    result = d;
+                                    result = dml;
                                     return true;
                                 }
                                 else
@@ -3474,9 +3488,9 @@ namespace System.Management.Automation.Language
                                         result = bigValue;
                                         return true;
                                     }
-                                    else if (Utils.TryConvertDouble(bigValue, out double dd))
+                                    else if (Utils.TryConvertDouble(bigValue, out double dbl))
                                     {
-                                        result = dd;
+                                        result = dbl;
                                         return true;
                                     }
                                 }

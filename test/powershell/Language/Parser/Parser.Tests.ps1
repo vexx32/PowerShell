@@ -667,6 +667,9 @@ foo``u{2195}abc
                 @{ Script = "0x0"; ExpectedValue = "0"; ExpectedType = [int] }
                 @{ Script = "0x12"; ExpectedValue = "18"; ExpectedType = [int] }
                 @{ Script = "-0x12"; ExpectedValue = "-18"; ExpectedType = [int] }
+                @{ Script = "0xFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [int] }
+                @{ Script = "0xFFFFFFFFFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [long] }
+                @{ Script = "0xFFFFFFFFFFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [decimal] }
                 #Multipliers
                 @{ Script = "1kb"; ExpectedValue = "1024"; ExpectedType = [int] }
                 @{ Script = "1mb"; ExpectedValue = "1048576"; ExpectedType = [int] }
