@@ -3307,62 +3307,59 @@ namespace System.Management.Automation.Language
 
                     if (real)
                     {
-                        double d;
-                        if (Double.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out d))
+                        if (Double.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out double doubleValue))
                         {
                             // TryParse incorrectly return +0 when the result should be -0, so check for that case
-                            if (d == 0.0 && strNum[0] == '-')
+                            if (doubleValue == 0.0 && strNum[0] == '-')
                             {
-                                d = -0.0;
+                                doubleValue = -0.0;
                             }
 
-                            d *= multiplier;
+                            doubleValue *= multiplier;
                             switch (suffix)
                             {
                                 case NumberSuffixFlags.None:
-                                    result = d;
-                                    break;
+                                    result = doubleValue;
+                                    return true;
                                 case NumberSuffixFlags.Short:
-                                    if (Utils.TryConvertInt16(d, out short s))
+                                    if (Utils.TryConvertInt16(doubleValue, out short shortValue))
                                     {
-                                        result = s;
+                                        result = shortValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.Long:
-                                    if (Utils.TryConvertInt64(d, out long l))
+                                    if (Utils.TryConvertInt64(doubleValue, out long longValue))
                                     {
-                                        result = l;
+                                        result = longValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedShort:
-                                    if (Utils.TryConvertUInt16(d, out ushort us))
+                                    if (Utils.TryConvertUInt16(doubleValue, out ushort ushortValue))
                                     {
-                                        result = us;
+                                        result = ushortValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.Unsigned:
-                                    if (Utils.TryConvertUInt32(d, out uint u))
+                                    if (Utils.TryConvertUInt32(doubleValue, out uint uintValue))
                                     {
-                                        result = u;
+                                        result = uintValue;
                                         return true;
                                     }
-                                    else if (Utils.TryConvertUInt64(d, out ulong ul))
+                                    else if (Utils.TryConvertUInt64(doubleValue, out ulong ulongFromUint))
                                     {
-                                        result = ul;
+                                        result = ulongFromUint;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedLong:
-                                    if (Utils.TryConvertUInt64(d, out ulong ul2))
+                                    if (Utils.TryConvertUInt64(doubleValue, out ulong ulongValue))
                                     {
-                                        result = ul2;
+                                        result = ulongValue;
                                         return true;
                                     }
-                                    break;
-                                default:
                                     break;
                             }
 
@@ -3383,12 +3380,27 @@ namespace System.Management.Automation.Language
                             {
                                 multiplier = -multiplier;
                             }
+
                             strNum = strNum.Slice(1);
+                        }
+
+                        // If we have a hex literal denoting int64 or decimal, treat it as such
+                        if (suffix == NumberSuffixFlags.None)
+                        {
+                            if (strNum.Length == 16)
+                            {
+                                suffix = NumberSuffixFlags.Long;
+                            }
+                            else if (strNum.Length == 24)
+                            {
+                                suffix = NumberSuffixFlags.Decimal;
+                            }
                         }
 
                         // If the string isn't at a length where we expect a signing bit
                         if ((strNum.Length & 7) != 0)
                         {
+                            // Allocate new span
                             Span<char> newSpan = new Span<char>(new char[strNum.Length + 1]);
 
                             // Insert 0 prefix so BigInt doesn't use the high bit as a sign bit
@@ -3399,109 +3411,102 @@ namespace System.Management.Automation.Language
 
                             strNum = newSpan;
                         }
-
-                        // If we have a hex literal denoting int64 or decimal, treat it as such
-                        if (suffix == NumberSuffixFlags.None)
-                        {
-                            if (strNum.Length > 8 && strNum.Length <= 16)
-                            {
-                                suffix = NumberSuffixFlags.Long;
-                            }
-                            else if (strNum.Length > 16 && strNum.Length <= 24)
-                            {
-                                suffix = NumberSuffixFlags.Decimal;
-                            }
-                        }
                     }
 
                     style = hex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign;
 
                     if (BigInteger.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out BigInteger bigValue))
                     {
+                        // Apply multiplier before attempting casting to prevent overflow
                         bigValue *= multiplier;
 
                         switch (suffix)
                         {
                             case NumberSuffixFlags.Short:
-                                if (Utils.TryConvertInt16(bigValue, out short s))
+                                if (Utils.TryConvertInt16(bigValue, out short shortValue))
                                 {
-                                    result = s;
+                                    result = shortValue;
                                     return true;
                                 }
                                 break;
                             case NumberSuffixFlags.Long:
-                                if (Utils.TryConvertInt64(bigValue, out long l))
+                                if (Utils.TryConvertInt64(bigValue, out long longValue))
                                 {
-                                    result = l;
+                                    result = longValue;
                                     return true;
                                 }
                                 break;
                             case NumberSuffixFlags.UnsignedShort:
-                                if (Utils.TryConvertUInt16(bigValue, out ushort us))
+                                if (Utils.TryConvertUInt16(bigValue, out ushort ushortValue))
                                 {
-                                    result = us;
+                                    result = ushortValue;
                                     return true;
                                 }
                                 break;
                             case NumberSuffixFlags.Unsigned:
-                                if (Utils.TryConvertUInt32(bigValue, out uint u))
+                                if (Utils.TryConvertUInt32(bigValue, out uint uintValue))
                                 {
-                                    result = u;
+                                    result = uintValue;
+                                    return true;
+                                }
+                                else if (Utils.TryConvertUInt64(bigValue, out ulong ulongFromUint))
+                                {
+                                    result = ulongFromUint;
                                     return true;
                                 }
                                 break;
                             case NumberSuffixFlags.UnsignedLong:
-                                if (Utils.TryConvertUInt64(bigValue, out ulong ul))
+                                if (Utils.TryConvertUInt64(bigValue, out ulong ulongValue))
                                 {
-                                    result = ul;
+                                    result = ulongValue;
                                     return true;
                                 }
                                 break;
                             case NumberSuffixFlags.Decimal:
-                                if (Utils.TryConvertDecimal(bigValue, out decimal d))
+                                if (Utils.TryConvertDecimal(bigValue, out decimal decimalValue))
                                 {
-                                    result = d;
+                                    result = decimalValue;
                                     return true;
                                 }
                                 break;
                             // No suffix specified; we have to work out the appropriate data type
                             case NumberSuffixFlags.None:
-                                if (Utils.TryConvertInt32(bigValue, out int i))
+                                if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
                                 {
-                                    result = i;
+                                    result = intNoSuffix;
                                     return true;
                                 }
-                                else if (Utils.TryConvertInt64(bigValue, out long l2))
+                                else if (Utils.TryConvertInt64(bigValue, out long longNoSuffix))
                                 {
-                                    result = l2;
+                                    result = longNoSuffix;
                                     return true;
                                 }
-                                else if (Utils.TryConvertDecimal(bigValue, out decimal dml))
+                                else if (Utils.TryConvertDecimal(bigValue, out decimal decimalNoSuffix))
                                 {
-                                    result = dml;
+                                    result = decimalNoSuffix;
                                     return true;
                                 }
                                 else
                                 {
-                                    if (hex)
+                                    // Result is too big for anything else; fallback to Double or BigInteger (if hex)
+                                    if (!hex)
+                                    {
+                                        if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
+                                        {
+                                            result = doubleNoSuffix;
+                                            return true;
+                                        }
+                                    }
+                                    else
                                     {
                                         result = bigValue;
                                         return true;
                                     }
-                                    else if (Utils.TryConvertDouble(bigValue, out double dbl))
-                                    {
-                                        result = dbl;
-                                        return true;
-                                    }
                                 }
-                                break;
-                            default:
-                                break;
-                        }
 
-                        // Unable to find appropriate number type for integer literal
-                        result = null;
-                        return false;
+                                result = null;
+                                return false;
+                        }
                     }
                 }
                 catch (Exception)
@@ -3560,7 +3565,7 @@ namespace System.Management.Automation.Language
         /// OR
         /// return the string format of the number
         /// </returns>
-        private string ScanNumberHelper(char firstChar, out bool hex, out bool real, out NumberSuffixFlags suffix, out long multiplier)
+        private ReadOnlySpan<char> ScanNumberHelper(char firstChar, out bool hex, out bool real, out NumberSuffixFlags suffix, out long multiplier)
         {
             hex = false;
             real = false;
@@ -3753,7 +3758,7 @@ namespace System.Management.Automation.Language
                 sb[0] = '-';
             }
 
-            return GetStringAndRelease(sb);
+            return (ReadOnlySpan<char>)GetStringAndRelease(sb);
         }
 
         #endregion Numbers
