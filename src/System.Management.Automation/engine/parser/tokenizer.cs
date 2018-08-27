@@ -3711,6 +3711,9 @@ namespace System.Management.Automation.Language
                     case 'Y':
                         suffix |= NumberSuffixFlags.SignedByte;
                         break;
+                    case  'I':
+                        suffix |= NumberSuffixFlags.BigInteger;
+                        break;
                     default:
                         notNumber = true;
                         break;
@@ -3742,13 +3745,6 @@ namespace System.Management.Automation.Language
                                     notNumber = true;
                                     break;
                             }
-                            break;
-                        case NumberSuffixFlags.Long:
-                            if (c == 'L' || c == 'l')
-                                suffix = NumberSuffixFlags.BigInteger;
-                            else
-                                notNumber = true;
-
                             break;
                         default:
                             notNumber = true;
