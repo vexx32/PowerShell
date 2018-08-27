@@ -3711,7 +3711,7 @@ namespace System.Management.Automation.Language
                     case 'Y':
                         suffix |= NumberSuffixFlags.SignedByte;
                         break;
-                    case  'I':
+                    case 'I':
                         suffix |= NumberSuffixFlags.BigInteger;
                         break;
                     default:

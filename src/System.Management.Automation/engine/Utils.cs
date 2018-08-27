@@ -276,7 +276,7 @@ namespace System.Management.Automation
                 }
             }
 
-            result = negative ? -value : value;
+            result = isNegative ? -value : value;
             return true;
         }
 
