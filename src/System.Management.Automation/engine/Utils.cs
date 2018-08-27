@@ -250,6 +250,36 @@ namespace System.Management.Automation
             return true;
         }
 
+        internal static bool TryParseBinary(ReadOnlySpan<char> binaryDigits, out BigInteger result)
+        {
+            BigInteger value = 0;
+            bool isNegative = false;
+
+            // If we expect a sign bit
+            if ((binaryDigits.Length & 7) == 0)
+            {
+                isNegative = binaryDigits[0] == '1';
+                binaryDigits = binaryDigits.Slice(1);
+            }
+
+            foreach (char c in binaryDigits)
+            {
+                if (c == '0' || c == '1')
+                {
+                    value <<= 1;
+                    value += c == '1' ? 1 : 0;
+                }
+                else
+                {
+                    result = 0;
+                    return false;
+                }
+            }
+
+            result = negative ? -value : value;
+            return true;
+        }
+
         // From System.Web.Util.HashCodeCombiner
         internal static int CombineHashCodes(int h1, int h2)
         {
