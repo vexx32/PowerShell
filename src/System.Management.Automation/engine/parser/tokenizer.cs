@@ -537,6 +537,14 @@ namespace System.Management.Automation.Language
         BigInteger = 0x20
     }
 
+    internal enum NumberType {
+        Decimal = 0x0,
+
+        Hex = 0x1,
+
+        Binary = 0x2
+    }
+
     //
     // Class used to do a partial snapshot of the state of the tokenizer.
     // This is used for nested scans on the same string.
@@ -3247,7 +3255,16 @@ namespace System.Management.Automation.Language
                 c = PeekChar();
             }
         }
-
+        private void ScanBinaryDigits(StringBuilder sb)
+        {
+            char c = PeekChar();
+            while (c.IsBinaryDigit())
+            {
+                SkipChar();
+                sb.Append(c);
+                c = PeekChar();
+            }
+        }
         private int ScanDecimalDigits(StringBuilder sb)
         {
             int countDigits = 0;
@@ -3297,7 +3314,7 @@ namespace System.Management.Automation.Language
             }
         }
 
-        private static bool TryGetNumberValue(ReadOnlySpan<char> strNum, bool hex, bool real, NumberSuffixFlags suffix, long multiplier, out object result)
+        private static bool TryGetNumberValue(ReadOnlySpan<char> strNum, NumberType type, bool real, NumberSuffixFlags suffix, long multiplier, out object result)
         {
             checked
             {
@@ -3405,7 +3422,7 @@ namespace System.Management.Automation.Language
                         return false;
                     }
 
-                    if (hex)
+                    if (type == NumberType.Hex)
                     {
                         if (!strNum[0].IsHexDigit())
                         {
@@ -3446,117 +3463,131 @@ namespace System.Management.Automation.Language
                         }
                     }
 
-                    style = hex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign;
-
-                    if (BigInteger.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out BigInteger bigValue))
+                    BigInteger bigValue;
+                    if (type == NumberType.Binary)
                     {
-                        // Apply multiplier before attempting casting to prevent overflow
-                        bigValue *= multiplier;
-
-                        switch (suffix)
+                        if (!Utils.TryParseBinary(strNum, suffix.HasFlag(NumberSuffixFlags.Unsigned), out bigValue))
                         {
-                            case NumberSuffixFlags.SignedByte:
-                                if (Utils.TryConvertSByte(bigValue, out sbyte sbyteValue))
-                                {
-                                    result = sbyteValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.UnsignedByte:
-                                if (Utils.TryConvertByte(bigValue, out byte byteValue))
-                                {
-                                    result = byteValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.Short:
-                                if (Utils.TryConvertInt16(bigValue, out short shortValue))
-                                {
-                                    result = shortValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.Long:
-                                if (Utils.TryConvertInt64(bigValue, out long longValue))
-                                {
-                                    result = longValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.UnsignedShort:
-                                if (Utils.TryConvertUInt16(bigValue, out ushort ushortValue))
-                                {
-                                    result = ushortValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.Unsigned:
-                                if (Utils.TryConvertUInt32(bigValue, out uint uintValue))
-                                {
-                                    result = uintValue;
-                                    return true;
-                                }
-                                else if (Utils.TryConvertUInt64(bigValue, out ulong ulongFromUint))
-                                {
-                                    result = ulongFromUint;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.UnsignedLong:
-                                if (Utils.TryConvertUInt64(bigValue, out ulong ulongValue))
-                                {
-                                    result = ulongValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.Decimal:
-                                if (Utils.TryConvertDecimal(bigValue, out decimal decimalValue))
-                                {
-                                    result = decimalValue;
-                                    return true;
-                                }
-                                break;
-                            case NumberSuffixFlags.BigInteger:
-                                result = bigValue;
+                            result = null;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        style = type == NumberType.Hex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign;
+                        if (!BigInteger.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out bigValue))
+                        {
+                            result = null;
+                            return false;
+                        }
+                    }
+
+                    // Apply multiplier before attempting casting to prevent overflow
+                    bigValue *= multiplier;
+
+                    switch (suffix)
+                    {
+                        case NumberSuffixFlags.SignedByte:
+                            if (Utils.TryConvertSByte(bigValue, out sbyte sbyteValue))
+                            {
+                                result = sbyteValue;
                                 return true;
-                            // No suffix specified; we have to work out the appropriate data type
-                            case NumberSuffixFlags.None:
-                                if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
+                            }
+                            break;
+                        case NumberSuffixFlags.UnsignedByte:
+                            if (Utils.TryConvertByte(bigValue, out byte byteValue))
+                            {
+                                result = byteValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.Short:
+                            if (Utils.TryConvertInt16(bigValue, out short shortValue))
+                            {
+                                result = shortValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.Long:
+                            if (Utils.TryConvertInt64(bigValue, out long longValue))
+                            {
+                                result = longValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.UnsignedShort:
+                            if (Utils.TryConvertUInt16(bigValue, out ushort ushortValue))
+                            {
+                                result = ushortValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.Unsigned:
+                            if (Utils.TryConvertUInt32(bigValue, out uint uintValue))
+                            {
+                                result = uintValue;
+                                return true;
+                            }
+                            else if (Utils.TryConvertUInt64(bigValue, out ulong ulongFromUint))
+                            {
+                                result = ulongFromUint;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.UnsignedLong:
+                            if (Utils.TryConvertUInt64(bigValue, out ulong ulongValue))
+                            {
+                                result = ulongValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.Decimal:
+                            if (Utils.TryConvertDecimal(bigValue, out decimal decimalValue))
+                            {
+                                result = decimalValue;
+                                return true;
+                            }
+                            break;
+                        case NumberSuffixFlags.BigInteger:
+                            result = bigValue;
+                            return true;
+                        // No suffix specified; we have to work out the appropriate data type
+                        case NumberSuffixFlags.None:
+                            if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
+                            {
+                                result = intNoSuffix;
+                                return true;
+                            }
+                            else if (Utils.TryConvertInt64(bigValue, out long longNoSuffix))
+                            {
+                                result = longNoSuffix;
+                                return true;
+                            }
+                            else if (Utils.TryConvertDecimal(bigValue, out decimal decimalNoSuffix))
+                            {
+                                result = decimalNoSuffix;
+                                return true;
+                            }
+                            else
+                            {
+                                // Result is too big for anything else; fallback to Double or BigInteger (if hex)
+                                if (!hex)
                                 {
-                                    result = intNoSuffix;
-                                    return true;
-                                }
-                                else if (Utils.TryConvertInt64(bigValue, out long longNoSuffix))
-                                {
-                                    result = longNoSuffix;
-                                    return true;
-                                }
-                                else if (Utils.TryConvertDecimal(bigValue, out decimal decimalNoSuffix))
-                                {
-                                    result = decimalNoSuffix;
-                                    return true;
-                                }
-                                else
-                                {
-                                    // Result is too big for anything else; fallback to Double or BigInteger (if hex)
-                                    if (!hex)
+                                    if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
                                     {
-                                        if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
-                                        {
-                                            result = doubleNoSuffix;
-                                            return true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        result = bigValue;
+                                        result = doubleNoSuffix;
                                         return true;
                                     }
                                 }
+                                else
+                                {
+                                    result = bigValue;
+                                    return true;
+                                }
+                            }
 
-                                result = null;
-                                return false;
-                        }
+                            result = null;
+                            return false;
                     }
                 }
                 catch (Exception)
@@ -3573,11 +3604,12 @@ namespace System.Management.Automation.Language
             Diagnostics.Assert(firstChar == '.' || (firstChar >= '0' && firstChar <= '9')
                 || (AllowSignedNumbers && (firstChar == '+' || firstChar.IsDash())), "Number must start with '.', '-', or digit.");
 
-            bool hex, real;
+            bool real;
+            NumberType type;
             NumberSuffixFlags suffix;
             long multiplier;
 
-            ReadOnlySpan<char> strNum = ScanNumberHelper(firstChar, out hex, out real, out suffix, out multiplier);
+            ReadOnlySpan<char> strNum = ScanNumberHelper(firstChar, out type, out real, out suffix, out multiplier);
             // the token is not a number. i.e. 77z.exe
             if (strNum == null)
             {
@@ -3587,7 +3619,7 @@ namespace System.Management.Automation.Language
             }
 
             object value;
-            if (!TryGetNumberValue(strNum, hex, real, suffix, multiplier, out value))
+            if (!TryGetNumberValue(strNum, type, real, suffix, multiplier, out value))
             {
                 if (!InExpressionMode())
                 {
@@ -3606,7 +3638,7 @@ namespace System.Management.Automation.Language
         }
 
         /// <param name="firstChar">the first character</param>
-        /// <param name="hex">indicate if it's a hex number</param>
+        /// <param name="type">indicate if it's a hex or binary number</param>
         /// <param name="real">indicate if it's a real number</param>
         /// <param name="suffix">indicate the type suffix</param>
         /// <param name="multiplier">indicate the specified multiplier</param>
@@ -3615,9 +3647,9 @@ namespace System.Management.Automation.Language
         /// OR
         /// return the string format of the number
         /// </returns>
-        private ReadOnlySpan<char> ScanNumberHelper(char firstChar, out bool hex, out bool real, out NumberSuffixFlags suffix, out long multiplier)
+        private ReadOnlySpan<char> ScanNumberHelper(char firstChar, out NumberType type, out bool real, out NumberSuffixFlags suffix, out long multiplier)
         {
-            hex = false;
+            type = NumberType.Decimal;
             real = false;
             suffix = NumberSuffixFlags.None;
             multiplier = 1;
@@ -3642,15 +3674,32 @@ namespace System.Management.Automation.Language
             else
             {
                 c = PeekChar();
-                if (firstChar == '0' && (c == 'x' || c == 'X'))
+                if (firstChar == '0' && (c == 'x' || c == 'X' || c == 'b' || c == 'B'))
                 {
                     SkipChar();
-                    ScanHexDigits(sb);
-                    if (sb.Length == 0)
+                    switch (c)
                     {
-                        notNumber = true;
+                        case 'x':
+                        case 'X':
+                            ScanHexDigits(sb);
+                            if (sb.Length == 0)
+                            {
+                                notNumber = true;
+                            }
+
+                            type = NumberType.Hex;
+                            break;
+                        case 'b':
+                        case 'B':
+                            ScanBinaryDigits(sb);
+                            if (sb.Length == 0)
+                            {
+                                notNumber = true;
+                            }
+
+                            type = NumberType.Binary;
+                            break;
                     }
-                    hex = true;
                 }
                 else
                 {
