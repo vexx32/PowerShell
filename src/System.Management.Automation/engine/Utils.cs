@@ -34,6 +34,54 @@ namespace System.Management.Automation
     /// </summary>
     internal static class Utils
     {
+        internal static bool TryConvertSByte(double value, out sbyte outValue)
+        {
+            if (value < sbyte.MinValue || value > sbyte.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (sbyte)Math.Round(value);
+            return true;
+        }
+
+        internal static bool TryConvertSByte(BigInteger value, out sbyte outValue)
+        {
+            if (value < sbyte.MinValue || value > sbyte.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (sbyte)value;
+            return true;
+        }
+
+        internal static bool TryConvertByte(double value, out byte outValue)
+        {
+            if (value < byte.MinValue || value > byte.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (byte)Math.Round(value);
+            return true;
+        }
+
+        internal static bool TryConvertByte(BigInteger value, out byte outValue)
+        {
+            if (value < sbyte.MinValue || value > sbyte.MaxValue)
+            {
+                outValue = 0;
+                return false;
+            }
+
+            outValue = (byte)value;
+            return true;
+        }
+
         internal static bool TryConvertInt16(double value, out short outValue)
         {
             if (value < short.MinValue || value > short.MaxValue)
