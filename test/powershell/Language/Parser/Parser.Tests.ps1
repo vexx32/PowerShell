@@ -670,6 +670,7 @@ foo``u{2195}abc
                 @{ Script = "0xFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [int] }
                 @{ Script = "0xFFFFFFFFFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [long] }
                 @{ Script = "0xFFFFFFFFFFFFFFFFFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [decimal] }
+                @{ Script = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF"; ExpectedValue = "-1"; ExpectedType = [BigInt] }
                 #Multipliers
                 @{ Script = "1kb"; ExpectedValue = "1024"; ExpectedType = [int] }
                 @{ Script = "1mb"; ExpectedValue = "1048576"; ExpectedType = [int] }
@@ -763,6 +764,30 @@ foo``u{2195}abc
                 @{ Script = "1ltb"; ExpectedValue = "1099511627776"; ExpectedType = [long] }
                 @{ Script = "1lpb"; ExpectedValue = "1125899906842624"; ExpectedType = [long] }
 
+            #BigInteger Integer notation
+                #Standard
+                @{ Script = "0I"; ExpectedValue = "0"; ExpectedType = [bigint] }
+                @{ Script = "10I"; ExpectedValue = "10"; ExpectedType = [bigint] }
+                @{ Script = "-10I"; ExpectedValue = "-10"; ExpectedType = [bigint] }
+                #Conversion from <Real>
+                @{ Script = "0I"; ExpectedValue = "0"; ExpectedType = [bigint] }
+                @{ Script = "2.5I"; ExpectedValue = "2"; ExpectedType = [bigint] }
+                @{ Script = "-2.5I"; ExpectedValue = "-2"; ExpectedType = [bigint] }
+                #Exponential
+                @{ Script = "0e0I"; ExpectedValue = "0"; ExpectedType = [bigint] }
+                @{ Script = "3e2I"; ExpectedValue = "300"; ExpectedType = [bigint] }
+                @{ Script = "-3e2I"; ExpectedValue = "-300"; ExpectedType = [bigint] }
+                #Hexadecimal
+                @{ Script = "0x0I"; ExpectedValue = "0"; ExpectedType = [bigint] }
+                @{ Script = "0x41I"; ExpectedValue = "65"; ExpectedType = [bigint] }
+                @{ Script = "-0x41I"; ExpectedValue = "-65"; ExpectedType = [bigint] }
+                #Multipliers
+                @{ Script = "1Ikb"; ExpectedValue = "1024"; ExpectedType = [bigint] }
+                @{ Script = "1Imb"; ExpectedValue = "1048576"; ExpectedType = [bigint] }
+                @{ Script = "1Igb"; ExpectedValue = "1073741824"; ExpectedType = [bigint] }
+                @{ Script = "1Itb"; ExpectedValue = "1099511627776"; ExpectedType = [bigint] }
+                @{ Script = "1Ipb"; ExpectedValue = "1125899906842624"; ExpectedType = [bigint] }
+bigint
             #Unsigned Integer notation
                 #Standard
                 @{ Script = "0u"; ExpectedValue = "0"; ExpectedType = [uint] }
