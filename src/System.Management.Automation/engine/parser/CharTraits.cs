@@ -61,6 +61,9 @@ namespace System.Management.Automation.Language
 
         // The character is the first character of some operator (and hence is not part of a token that starts a number)
         ForceStartNewTokenAfterNumber = 0x0800,
+
+        // The character is a binary digit.
+        BinaryDigit = 1000,
     }
 
     internal static class CharExtensions
@@ -120,8 +123,8 @@ namespace System.Management.Automation.Language
 /*        - */ CharTraits.ForceStartNewTokenAfterNumber,
 /*        . */ CharTraits.ForceStartNewTokenAfterNumber,
 /*        / */ CharTraits.ForceStartNewTokenAfterNumber,
-/*        0 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst,
-/*        1 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst,
+/*        0 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst | CharTraits.BinaryDigit,
+/*        1 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst | CharTraits.BinaryDigit,
 /*        2 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst,
 /*        3 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst,
 /*        4 */ CharTraits.Digit | CharTraits.HexDigit | CharTraits.VarNameFirst,
@@ -290,6 +293,16 @@ namespace System.Management.Automation.Language
             if (c < 128)
             {
                 return (s_traits[c] & CharTraits.HexDigit) != 0;
+            }
+            return false;
+        }
+
+        // Return true if the character is a binary digit.
+        internal static bool IsBinaryDigit(this char c)
+        {
+            if (c < 128)
+            {
+                return (s_traits[c] & CharTraits.BinaryDigit) != 0;
             }
             return false;
         }
