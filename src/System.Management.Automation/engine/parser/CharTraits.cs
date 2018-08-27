@@ -145,7 +145,7 @@ namespace System.Management.Automation.Language
 /*        F */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.HexDigit,
 /*        G */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.MultiplierStart,
 /*        H */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
-/*        I */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
+/*        I */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.TypeSuffix,
 /*        J */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
 /*        K */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.MultiplierStart,
 /*        L */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.TypeSuffix,
