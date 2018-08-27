@@ -518,7 +518,12 @@ namespace System.Management.Automation.Language
         /// <summary>
         /// Indicates 'd' suffix for decimal (128-bit) real numbers.
         /// </summary>
-        Decimal = 0x8
+        Decimal = 0x8,
+
+        /// <summary>
+        /// Indicates 'll' suffix for BigInteger (arbitrarily large integer) numerals.
+        /// </summary>
+        BigInteger = 0x10
     }
 
     //
@@ -3361,6 +3366,9 @@ namespace System.Management.Automation.Language
                                         return true;
                                     }
                                     break;
+                                case NumberSuffixFlags.BigInteger:
+                                    result = (BigInteger)Math.Round(doubleValue);
+                                    return true;
                             }
 
                             result = null;
@@ -3469,6 +3477,9 @@ namespace System.Management.Automation.Language
                                     return true;
                                 }
                                 break;
+                            case NumberSuffixFlags.BigInteger:
+                                result = bigValue;
+                                return true;
                             // No suffix specified; we have to work out the appropriate data type
                             case NumberSuffixFlags.None:
                                 if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
@@ -3667,26 +3678,34 @@ namespace System.Management.Automation.Language
                 if (c.IsTypeSuffix())
                 {
                     SkipChar();
-                    if (suffix == NumberSuffixFlags.Unsigned)
+                    switch (suffix)
                     {
-                        switch (c)
-                        {
-                            case 'l':
-                            case 'L':
-                                suffix |= NumberSuffixFlags.Long;
-                                break;
-                            case 's':
-                            case 'S':
-                                suffix |= NumberSuffixFlags.Short;
-                                break;
-                            default:
+                        case NumberSuffixFlags.Unsigned:
+                            switch (c)
+                            {
+                                case 'l':
+                                case 'L':
+                                    suffix |= NumberSuffixFlags.Long;
+                                    break;
+                                case 's':
+                                case 'S':
+                                    suffix |= NumberSuffixFlags.Short;
+                                    break;
+                                default:
+                                    notNumber = true;
+                                    break;
+                            }
+                            break;
+                        case NumberSuffixFlags.Long:
+                            if (c == 'L' || c == 'l')
+                                suffix = NumberSuffixFlags.BigInteger;
+                            else
                                 notNumber = true;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        notNumber = true;
+
+                            break;
+                        default:
+                            notNumber = true;
+                            break;
                     }
 
                     c = PeekChar();
