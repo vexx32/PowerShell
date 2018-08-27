@@ -256,10 +256,16 @@ namespace System.Management.Automation
             bool isNegative = false;
 
             // If we expect a sign bit
-            if ((binaryDigits.Length & 7) == 0)
+            switch (binaryDigits.Length)
             {
-                isNegative = binaryDigits[0] == '1';
-                binaryDigits = binaryDigits.Slice(1);
+                case 8:
+                case 16:
+                case 32:
+                case 64:
+                case 128:
+                    isNegative = binaryDigits[0] == 1;
+                    binaryDigits = binaryDigits.Slice(1);
+                    break;
             }
 
             foreach (char c in binaryDigits)
