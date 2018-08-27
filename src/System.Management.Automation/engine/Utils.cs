@@ -276,7 +276,9 @@ namespace System.Management.Automation
                 }
             }
 
-            result = isNegative ? -value : value;
+            // If we have a sign bit, use two's complement to evaluate the value
+            // This should mimic int parsing behaviour
+            result = isNegative ? (~(value - 0x01)) * -1 : value;
             return true;
         }
 
