@@ -3466,6 +3466,15 @@ namespace System.Management.Automation.Language
                     BigInteger bigValue;
                     if (type == NumberType.Binary)
                     {
+                        if (!strNum[0].IsBinaryDigit())
+                        {
+                            if (strNum[0] == '-')
+                            {
+                                multiplier = -multiplier;
+                            }
+
+                            strNum = strNum.Slice(1);
+                        }
                         if (!Utils.TryParseBinary(strNum, suffix.HasFlag(NumberSuffixFlags.Unsigned), out bigValue))
                         {
                             result = null;
@@ -3571,7 +3580,7 @@ namespace System.Management.Automation.Language
                             else
                             {
                                 // Result is too big for anything else; fallback to Double or BigInteger (if hex)
-                                if (!hex)
+                                if (type == NumberType.Decimal)
                                 {
                                     if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
                                     {
@@ -4642,12 +4651,13 @@ namespace System.Management.Automation.Language
 
                     if (InExpressionMode() && (char.IsDigit(c1) || c1 == '.'))
                     {
-                        bool hex, real;
+                        bool real;
+                        NumberType type;
                         NumberSuffixFlags suffix;
                         long multiplier;
 
                         // check if the next token is actually a number
-                        ReadOnlySpan<char> strNum = ScanNumberHelper(c, out hex, out real, out suffix, out multiplier);
+                        ReadOnlySpan<char> strNum = ScanNumberHelper(c, out type, out real, out suffix, out multiplier);
                         // rescan characters after the check
                         _currentIndex = _tokenStart;
                         c = GetChar();
