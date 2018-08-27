@@ -654,6 +654,7 @@ foo``u{2195}abc
                 @{ Script = "10"; ExpectedValue = "10"; ExpectedType = [int] }
                 @{ Script = "-10"; ExpectedValue = "-10"; ExpectedType = [int] }
                 @{ Script = "+10"; ExpectedValue = "10"; ExpectedType = [int] }
+
                 #<Real>
                 @{ Script = "0.0"; ExpectedValue = "0"; ExpectedType = [double] }
                 @{ Script = "6.5"; ExpectedValue = "6.5"; ExpectedType = [double] }
