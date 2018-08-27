@@ -250,44 +250,6 @@ namespace System.Management.Automation
             return true;
         }
 
-        internal static bool TryParseBinary(ReadOnlySpan<char> binaryDigits, out BigInteger result)
-        {
-            BigInteger value = 0;
-            bool isNegative = false;
-
-            // If we expect a sign bit
-            switch (binaryDigits.Length)
-            {
-                case 8:
-                case 16:
-                case 32:
-                case 64:
-                case 128:
-                    isNegative = binaryDigits[0] == 1;
-                    binaryDigits = binaryDigits.Slice(1);
-                    break;
-            }
-
-            foreach (char c in binaryDigits)
-            {
-                if (c == '0' || c == '1')
-                {
-                    value <<= 1;
-                    value += c == '1' ? 1 : 0;
-                }
-                else
-                {
-                    result = 0;
-                    return false;
-                }
-            }
-
-            // If we have a sign bit, use two's complement to evaluate the value
-            // This should mimic int parsing behaviour
-            result = isNegative ? (~(value - 0x01)) * -1 : value;
-            return true;
-        }
-
         // From System.Web.Util.HashCodeCombiner
         internal static int CombineHashCodes(int h1, int h2)
         {
