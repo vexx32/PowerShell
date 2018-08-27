@@ -494,36 +494,47 @@ namespace System.Management.Automation.Language
         Unsigned = 0x1,
 
         /// <summary>
+        /// Indicates 'y' suffix for signed byte (sbyte) values.
+        /// </summary>
+        SignedByte = 0x2,
+
+        /// <summary>
+        /// Indicates 'uy' suffix for unsigned byte values.
+        /// This is a compound value, representing both SignedByte and Unsigned flags being set.
+        /// </summary>
+        UnsignedByte = 0x3,
+
+        /// <summary>
         /// Indicates 's' suffix for short (Int16) integers.
         /// </summary>
-        Short = 0x2,
+        Short = 0x4,
 
         /// <summary>
         /// Indicates 'us' suffix for ushort (UInt16) integers.
         /// This is a compound flag value, representing both Unsigned and Short flags being set.
         /// </summary>
-        UnsignedShort = 0x3,
+        UnsignedShort = 0x5,
 
         /// <summary>
         /// Indicates 'l' suffix for long (Int64) integers.
         /// </summary>
-        Long = 0x4,
+        Long = 0x8,
 
         /// <summary>
         /// Indicates 'ul' suffix for ulong (UInt64) integers.
         /// This is a compound flag value, representing both Unsigned and Long flags being set.
         /// </summary>
-        UnsignedLong = 0x5,
+        UnsignedLong = 0x9,
 
         /// <summary>
         /// Indicates 'd' suffix for decimal (128-bit) real numbers.
         /// </summary>
-        Decimal = 0x8,
+        Decimal = 0x10,
 
         /// <summary>
         /// Indicates 'll' suffix for BigInteger (arbitrarily large integer) numerals.
         /// </summary>
-        BigInteger = 0x10
+        BigInteger = 0x20
     }
 
     //
@@ -3326,6 +3337,20 @@ namespace System.Management.Automation.Language
                                 case NumberSuffixFlags.None:
                                     result = doubleValue;
                                     return true;
+                                case NumberSuffixFlags.SignedByte:
+                                    if (Utils.TryConvertSByte(doubleValue, out sbyte sbyteValue))
+                                    {
+                                        result = sbyteValue;
+                                        return true;
+                                    }
+                                    break;
+                                case NumberSuffixFlags.UnsignedByte:
+                                    if (Utils.TryConvertByte(doubleValue, out byte byteValue))
+                                    {
+                                        result = byteValue;
+                                        return true;
+                                    }
+                                    break;
                                 case NumberSuffixFlags.Short:
                                     if (Utils.TryConvertInt16(doubleValue, out short shortValue))
                                     {
@@ -3430,6 +3455,20 @@ namespace System.Management.Automation.Language
 
                         switch (suffix)
                         {
+                            case NumberSuffixFlags.SignedByte:
+                                if (Utils.TryConvertSByte(bigValue, out sbyte sbyteValue))
+                                {
+                                    result = sbyteValue;
+                                    return true;
+                                }
+                                break;
+                            case NumberSuffixFlags.UnsignedByte:
+                                if (Utils.TryConvertByte(bigValue, out byte byteValue))
+                                {
+                                    result = byteValue;
+                                    return true;
+                                }
+                                break;
                             case NumberSuffixFlags.Short:
                                 if (Utils.TryConvertInt16(bigValue, out short shortValue))
                                 {
@@ -3668,6 +3707,10 @@ namespace System.Management.Automation.Language
                     case 'D':
                         suffix |= NumberSuffixFlags.Decimal;
                         break;
+                    case 'y':
+                    case 'Y':
+                        suffix |= NumberSuffixFlags.SignedByte;
+                        break;
                     default:
                         notNumber = true;
                         break;
@@ -3690,6 +3733,10 @@ namespace System.Management.Automation.Language
                                 case 's':
                                 case 'S':
                                     suffix |= NumberSuffixFlags.Short;
+                                    break;
+                                case 'y':
+                                case 'Y':
+                                    suffix |= NumberSuffixFlags.SignedByte;
                                     break;
                                 default:
                                     notNumber = true;
