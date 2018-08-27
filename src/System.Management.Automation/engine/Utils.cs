@@ -250,6 +250,35 @@ namespace System.Management.Automation
             return true;
         }
 
+        internal static bool TryParseBinary(ReadOnlySpan<char> digits, bool unsigned, out BigInteger result)
+        {
+            if (digits.Length <= 8)
+            {
+                result = unsigned ? (BigInteger)Convert.ToByte(digits.ToString(), 2) : Convert.ToSByte(digits.ToString(), 2);
+                return true;
+            }
+            else if (digits.Length <= 16)
+            {
+                result = unsigned ? (BigInteger)Convert.ToUInt16(digits.ToString(), 2) : Convert.ToInt16(digits.ToString(), 2);
+                return true;
+            }
+            else if (digits.Length <= 32)
+            {
+                result = unsigned ? (BigInteger)Convert.ToUInt32(digits.ToString(), 2) : Convert.ToInt32(digits.ToString(), 2);
+                return true;
+            }
+            else if (digits.Length <= 64)
+            {
+                result = unsigned ? (BigInteger)Convert.ToUInt64(digits.ToString(), 2) : Convert.ToInt64(digits.ToString(), 2);
+                return true;
+            }
+            else
+            {
+                result = 0;
+                return false;
+            }
+        }
+
         // From System.Web.Util.HashCodeCombiner
         internal static int CombineHashCodes(int h1, int h2)
         {
