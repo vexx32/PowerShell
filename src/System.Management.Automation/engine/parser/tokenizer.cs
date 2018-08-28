@@ -3475,11 +3475,30 @@ namespace System.Management.Automation.Language
 
                             strNum = strNum.Slice(1);
                         }
+
                         if (!Utils.TryParseBinary(strNum, suffix.HasFlag(NumberSuffixFlags.Unsigned), out bigValue))
                         {
                             result = null;
                             return false;
                         }
+
+                        if (suffix == NumberSuffixFlags.None || suffix == NumberSuffixFlags.Unsigned)
+                        {
+                            switch (strNum.Length)
+                            {
+                                case 8:
+                                    suffix |= NumberSuffixFlags.SignedByte;
+                                    break;
+                                case 16:
+                                    suffix |= NumberSuffixFlags.Short;
+                                    break;
+                                // 32 is Int32, which is default, so is ignored
+                                case 64:
+                                    suffix |= NumberSuffixFlags.Long;
+                                    break;
+                            }
+                        }
+
                     }
                     else
                     {
