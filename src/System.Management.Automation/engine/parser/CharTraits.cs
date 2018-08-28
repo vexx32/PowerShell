@@ -63,7 +63,7 @@ namespace System.Management.Automation.Language
         ForceStartNewTokenAfterNumber = 0x0800,
 
         // The character is a binary digit.
-        BinaryDigit = 1000,
+        BinaryDigit = 0x1000,
     }
 
     internal static class CharExtensions
