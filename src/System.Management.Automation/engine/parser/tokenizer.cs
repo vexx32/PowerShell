@@ -409,7 +409,7 @@ namespace System.Management.Automation.Language
         public string Name { get; set; }
 
         /// <summary>
-        /// The required type of the property
+        /// The required format of the property
         /// </summary>
         public string TypeConstraint { get; set; }
 
@@ -537,7 +537,7 @@ namespace System.Management.Automation.Language
         BigInteger = 0x20
     }
 
-    internal enum NumberType {
+    internal enum NumberFormat {
         Decimal = 0x0,
 
         Hex = 0x1,
@@ -603,7 +603,7 @@ namespace System.Management.Automation.Language
         /*9*/    "workflow",                "parallel",         "sequence",         "inlinescript",               /*9*/
         /*A*/    "configuration",           "public",           "private",          "static",                     /*A*/
         /*B*/    "interface",               "enum",             "namespace",        "module",                     /*B*/
-        /*C*/    "type",                    "assembly",         "command",          "hidden",                     /*C*/
+        /*C*/    "format",                    "assembly",         "command",          "hidden",                     /*C*/
         /*D*/    "base",                                                                                          /*D*/
         };
 
@@ -3314,7 +3314,7 @@ namespace System.Management.Automation.Language
             }
         }
 
-        private static bool TryGetNumberValue(ReadOnlySpan<char> strNum, NumberType type, bool real, NumberSuffixFlags suffix, long multiplier, out object result)
+        private static bool TryGetNumberValue(ReadOnlySpan<char> strNum, NumberFormat format, bool real, NumberSuffixFlags suffix, long multiplier, out object result)
         {
             checked
             {
@@ -3422,7 +3422,7 @@ namespace System.Management.Automation.Language
                         return false;
                     }
 
-                    if (type == NumberType.Hex)
+                    if (format == NumberFormat.Hex)
                     {
                         if (!strNum[0].IsHexDigit())
                         {
@@ -3435,20 +3435,21 @@ namespace System.Management.Automation.Language
                         }
 
                         // If we have a hex literal denoting int64 or decimal, treat it as such
-                        if (suffix == NumberSuffixFlags.None)
+                        if (suffix == NumberSuffixFlags.None || suffix == NumberSuffixFlags.Unsigned)
                         {
                             if (strNum.Length == 16)
                             {
-                                suffix = NumberSuffixFlags.Long;
+                                suffix |= NumberSuffixFlags.Long;
                             }
                             else if (strNum.Length == 24)
                             {
-                                suffix = NumberSuffixFlags.Decimal;
+                                suffix |= NumberSuffixFlags.Decimal;
                             }
                         }
 
                         // If the string isn't at a length where we expect a signing bit
-                        if ((strNum.Length & 7) != 0)
+                        // or it's flagged as unsigned
+                        if ((suffix.HasFlag(NumberSuffixFlags.Unsigned) || (strNum.Length & 7) != 0) && strNum[0] != 0)
                         {
                             // Allocate new span
                             Span<char> newSpan = new Span<char>(new char[strNum.Length + 1]);
@@ -3464,7 +3465,7 @@ namespace System.Management.Automation.Language
                     }
 
                     BigInteger bigValue;
-                    if (type == NumberType.Binary)
+                    if (format == NumberFormat.Binary)
                     {
                         if (!strNum[0].IsBinaryDigit())
                         {
@@ -3486,13 +3487,13 @@ namespace System.Management.Automation.Language
                         {
                             switch (strNum.Length)
                             {
-                                case int i when (i <= 8):
+                                case int n when (n <= 8):
                                     suffix |= NumberSuffixFlags.SignedByte;
                                     break;
-                                case int i when (i <= 16):
+                                case int n when (n <= 16):
                                     suffix |= NumberSuffixFlags.Short;
                                     break;
-                                // 32 is Int32, which is default, so is ignored
+                                // 17-63 will follow the standard (U)Int32/64 code paths
                                 case 64:
                                     suffix |= NumberSuffixFlags.Long;
                                     break;
@@ -3502,7 +3503,7 @@ namespace System.Management.Automation.Language
                     }
                     else
                     {
-                        style = type == NumberType.Hex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign;
+                        style = format == NumberFormat.Hex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign;
                         if (!BigInteger.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out bigValue))
                         {
                             result = null;
@@ -3579,7 +3580,7 @@ namespace System.Management.Automation.Language
                         case NumberSuffixFlags.BigInteger:
                             result = bigValue;
                             return true;
-                        // No suffix specified; we have to work out the appropriate data type
+                        // No suffix specified; we have to work out the appropriate data format
                         case NumberSuffixFlags.None:
                             if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
                             {
@@ -3599,7 +3600,7 @@ namespace System.Management.Automation.Language
                             else
                             {
                                 // Result is too big for anything else; fallback to Double or BigInteger (if hex)
-                                if (type == NumberType.Decimal)
+                                if (format == NumberFormat.Decimal)
                                 {
                                     if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
                                     {
@@ -3633,11 +3634,11 @@ namespace System.Management.Automation.Language
                 || (AllowSignedNumbers && (firstChar == '+' || firstChar.IsDash())), "Number must start with '.', '-', or digit.");
 
             bool real;
-            NumberType type;
+            NumberFormat format;
             NumberSuffixFlags suffix;
             long multiplier;
 
-            ReadOnlySpan<char> strNum = ScanNumberHelper(firstChar, out type, out real, out suffix, out multiplier);
+            ReadOnlySpan<char> strNum = ScanNumberHelper(firstChar, out format, out real, out suffix, out multiplier);
             // the token is not a number. i.e. 77z.exe
             if (strNum == null)
             {
@@ -3647,7 +3648,7 @@ namespace System.Management.Automation.Language
             }
 
             object value;
-            if (!TryGetNumberValue(strNum, type, real, suffix, multiplier, out value))
+            if (!TryGetNumberValue(strNum, format, real, suffix, multiplier, out value))
             {
                 if (!InExpressionMode())
                 {
@@ -3666,18 +3667,18 @@ namespace System.Management.Automation.Language
         }
 
         /// <param name="firstChar">the first character</param>
-        /// <param name="type">indicate if it's a hex or binary number</param>
+        /// <param name="format">indicate if it's a hex or binary number</param>
         /// <param name="real">indicate if it's a real number</param>
-        /// <param name="suffix">indicate the type suffix</param>
+        /// <param name="suffix">indicate the format suffix</param>
         /// <param name="multiplier">indicate the specified multiplier</param>
         /// <returns>
         /// return null if the token is not a number
         /// OR
         /// return the string format of the number
         /// </returns>
-        private ReadOnlySpan<char> ScanNumberHelper(char firstChar, out NumberType type, out bool real, out NumberSuffixFlags suffix, out long multiplier)
+        private ReadOnlySpan<char> ScanNumberHelper(char firstChar, out NumberFormat format, out bool real, out NumberSuffixFlags suffix, out long multiplier)
         {
-            type = NumberType.Decimal;
+            format = NumberFormat.Decimal;
             real = false;
             suffix = NumberSuffixFlags.None;
             multiplier = 1;
@@ -3715,7 +3716,7 @@ namespace System.Management.Automation.Language
                                 notNumber = true;
                             }
 
-                            type = NumberType.Hex;
+                            format = NumberFormat.Hex;
                             break;
                         case 'b':
                         case 'B':
@@ -3725,7 +3726,7 @@ namespace System.Management.Automation.Language
                                 notNumber = true;
                             }
 
-                            type = NumberType.Binary;
+                            format = NumberFormat.Binary;
                             break;
                     }
                 }
@@ -3994,7 +3995,7 @@ namespace System.Management.Automation.Language
 
         internal Token GetLBracket()
         {
-            // We know we want a '[' token or no token.  We are in a context where we expect an attribute/type constraint
+            // We know we want a '[' token or no token.  We are in a context where we expect an attribute/format constraint
             // and allow any whitespace/comments before the '[', but nothing else (the caller has already skipped newlines
             // if appropriate.)  This is handled specially because in command mode, a generic token may begin with '[', but
             // we don't want anything more than the '['.
@@ -4671,12 +4672,12 @@ namespace System.Management.Automation.Language
                     if (InExpressionMode() && (char.IsDigit(c1) || c1 == '.'))
                     {
                         bool real;
-                        NumberType type;
+                        NumberFormat format;
                         NumberSuffixFlags suffix;
                         long multiplier;
 
                         // check if the next token is actually a number
-                        ReadOnlySpan<char> strNum = ScanNumberHelper(c, out type, out real, out suffix, out multiplier);
+                        ReadOnlySpan<char> strNum = ScanNumberHelper(c, out format, out real, out suffix, out multiplier);
                         // rescan characters after the check
                         _currentIndex = _tokenStart;
                         c = GetChar();
