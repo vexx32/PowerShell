@@ -3486,10 +3486,10 @@ namespace System.Management.Automation.Language
                         {
                             switch (strNum.Length)
                             {
-                                case 8:
+                                case int i when (i <= 8):
                                     suffix |= NumberSuffixFlags.SignedByte;
                                     break;
-                                case 16:
+                                case int i when (i <= 16):
                                     suffix |= NumberSuffixFlags.Short;
                                     break;
                                 // 32 is Int32, which is default, so is ignored
