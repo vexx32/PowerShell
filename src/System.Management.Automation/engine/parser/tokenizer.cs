@@ -3278,7 +3278,7 @@ namespace System.Management.Automation.Language
                 {
                     SkipChar();
                     c = PeekChar();
-                    if (c == '_' || !c.IsHexDigit())
+                    if (c == '_' || !c.IsBinaryDigit())
                     {
                         // Double underscore, or a trailing underscore are not valid formats
                         UngetChar();
@@ -3301,7 +3301,7 @@ namespace System.Management.Automation.Language
                 {
                     SkipChar();
                     c = PeekChar();
-                    if (c == '_' || !c.IsHexDigit())
+                    if (c == '_' || !c.IsDecimalDigit())
                     {
                         // Double underscore, or a trailing underscore are not valid formats
                         UngetChar();
