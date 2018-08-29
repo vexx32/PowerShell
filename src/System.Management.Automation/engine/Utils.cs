@@ -34,77 +34,44 @@ namespace System.Management.Automation
     /// </summary>
     internal static class Utils
     {
+        private struct PrimitiveRange
+        {
+            internal readonly BigInteger MinValue;
+            internal readonly BigInteger MaxValue;
+
+            internal PrimitiveRange(BigInteger min, BigInteger max)
+            {
+                this.MinValue = min;
+                this.MaxValue = max;
+            }
+
+            internal void Deconstruct(out BigInteger min, out BigInteger max)
+            {
+                min = this.MinValue;
+                max = this.MaxValue;
+            }
+        }
+
+        private static readonly Dictionary<Type, PrimitiveRange> s_typeBounds = new Dictionary<Type, PrimitiveRange>() {
+            { typeof(sbyte), new PrimitiveRange(sbyte.MinValue, sbyte.MaxValue) },
+            { typeof(byte), new PrimitiveRange(byte.MinValue, byte.MaxValue) },
+            { typeof(short), new PrimitiveRange(short.MinValue, short.MaxValue) },
+            { typeof(ushort), new PrimitiveRange(ushort.MinValue, ushort.MaxValue) },
+            { typeof(int), new PrimitiveRange(int.MinValue, int.MaxValue) },
+            { typeof(uint), new PrimitiveRange(uint.MinValue, uint.MaxValue) },
+            { typeof(long), new PrimitiveRange(long.MinValue, long.MaxValue) },
+            { typeof(ulong), new PrimitiveRange(ulong.MinValue, ulong.MaxValue) },
+            { typeof(decimal), new PrimitiveRange((BigInteger)decimal.MinValue, (BigInteger)decimal.MaxValue) },
+            { typeof(double), new PrimitiveRange((BigInteger)double.MinValue, (BigInteger)double.MaxValue) },
+        };
         internal static bool TryConvert<T>(double value, out T outValue) where T : struct
         {
-            switch (typeof(T))
+            (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
+
+            if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
             {
-                case Type t when t == typeof(sbyte):
-                    if (value < sbyte.MinValue || value > sbyte.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(byte):
-                    if (value < byte.MinValue || value > byte.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(short):
-                    if (value < short.MinValue || value > short.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(ushort):
-                    if (value < ushort.MinValue || value > ushort.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(int):
-                    if (value < int.MinValue || value > int.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(uint):
-                    if (value < uint.MinValue || value > uint.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(long):
-                    if (value < long.MinValue || value > long.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(ulong):
-                    if (value < ulong.MinValue || value > ulong.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                default:
-                    outValue = default(T);
-                    return false;
+                outValue = default(T);
+                return false;
             }
 
             outValue = LanguagePrimitives.ConvertTo<T>(Math.Round(value));
@@ -113,91 +80,12 @@ namespace System.Management.Automation
 
         internal static bool TryConvert<T>(BigInteger value, out T outValue) where T : struct
         {
-            switch (typeof(T))
+            (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
+
+            if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
             {
-                case Type t when t == typeof(sbyte):
-                    if (value < sbyte.MinValue || value > sbyte.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(byte):
-                    if (value < byte.MinValue || value > byte.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(short):
-                    if (value < short.MinValue || value > short.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(ushort):
-                    if (value < ushort.MinValue || value > ushort.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(int):
-                    if (value < int.MinValue || value > int.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(uint):
-                    if (value < uint.MinValue || value > uint.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(long):
-                    if (value < long.MinValue || value > long.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(ulong):
-                    if (value < ulong.MinValue || value > ulong.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(decimal):
-                    if (value < (BigInteger)decimal.MinValue || value > (BigInteger)decimal.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                case Type t when t == typeof(double):
-                    if (value < (BigInteger)double.MinValue || value > (BigInteger)double.MaxValue)
-                    {
-                        outValue = default(T);
-                        return false;
-                    }
-
-                    break;
-                default:
-                    outValue = default(T);
-                    return false;
+                outValue = default(T);
+                return false;
             }
 
             outValue = LanguagePrimitives.ConvertTo<T>(value);
