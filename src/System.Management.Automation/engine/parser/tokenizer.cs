@@ -3297,6 +3297,17 @@ namespace System.Management.Automation.Language
                 SkipChar();
                 sb.Append(c);
                 c = PeekChar();
+                if (c == '_')
+                {
+                    SkipChar();
+                    c = PeekChar();
+                    if (c == '_' || !c.IsHexDigit())
+                    {
+                        // Double underscore, or a trailing underscore are not valid formats
+                        UngetChar();
+                        break;
+                    }
+                }
             }
 
             return countDigits;
