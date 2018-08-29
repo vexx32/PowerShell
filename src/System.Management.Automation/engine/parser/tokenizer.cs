@@ -3580,7 +3580,6 @@ namespace System.Management.Automation.Language
                         case NumberSuffixFlags.BigInteger:
                             result = bigValue;
                             return true;
-                        // No suffix specified; we have to work out the appropriate data format
                         case NumberSuffixFlags.None:
                             if (Utils.TryConvert<int>(bigValue, out int intNoSuffix))
                             {
