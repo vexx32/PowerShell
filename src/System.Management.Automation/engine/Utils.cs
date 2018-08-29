@@ -66,6 +66,12 @@ namespace System.Management.Automation
         };
         internal static bool TryConvert<T>(double value, out T outValue) where T : struct
         {
+            if (!s_typeBounds.ContainsKey(typeof(T)))
+            {
+                outValue = default(T);
+                return false;
+            }
+
             (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
 
             if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
@@ -80,6 +86,12 @@ namespace System.Management.Automation
 
         internal static bool TryConvert<T>(BigInteger value, out T outValue) where T : struct
         {
+            if (!s_typeBounds.ContainsKey(typeof(T)))
+            {
+                outValue = default(T);
+                return false;
+            }
+
             (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
 
             if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
