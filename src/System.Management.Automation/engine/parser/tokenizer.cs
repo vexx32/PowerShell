@@ -3355,54 +3355,54 @@ namespace System.Management.Automation.Language
                                     result = doubleValue;
                                     return true;
                                 case NumberSuffixFlags.SignedByte:
-                                    if (Utils.TryConvertSByte(doubleValue, out sbyte sbyteValue))
+                                    if (Utils.TryConvert<sbyte>(doubleValue, out sbyte sbyteValue))
                                     {
                                         result = sbyteValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedByte:
-                                    if (Utils.TryConvertByte(doubleValue, out byte byteValue))
+                                    if (Utils.TryConvert<byte>(doubleValue, out byte byteValue))
                                     {
                                         result = byteValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.Short:
-                                    if (Utils.TryConvertInt16(doubleValue, out short shortValue))
+                                    if (Utils.TryConvert<short>(doubleValue, out short shortValue))
                                     {
                                         result = shortValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.Long:
-                                    if (Utils.TryConvertInt64(doubleValue, out long longValue))
+                                    if (Utils.TryConvert<long>(doubleValue, out long longValue))
                                     {
                                         result = longValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedShort:
-                                    if (Utils.TryConvertUInt16(doubleValue, out ushort ushortValue))
+                                    if (Utils.TryConvert<ushort>(doubleValue, out ushort ushortValue))
                                     {
                                         result = ushortValue;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.Unsigned:
-                                    if (Utils.TryConvertUInt32(doubleValue, out uint uintValue))
+                                    if (Utils.TryConvert<uint>(doubleValue, out uint uintValue))
                                     {
                                         result = uintValue;
                                         return true;
                                     }
-                                    else if (Utils.TryConvertUInt64(doubleValue, out ulong ulongFromUint))
+                                    else if (Utils.TryConvert<ulong>(doubleValue, out ulong ulongFromUint))
                                     {
                                         result = ulongFromUint;
                                         return true;
                                     }
                                     break;
                                 case NumberSuffixFlags.UnsignedLong:
-                                    if (Utils.TryConvertUInt64(doubleValue, out ulong ulongValue))
+                                    if (Utils.TryConvert<ulong>(doubleValue, out ulong ulongValue))
                                     {
                                         result = ulongValue;
                                         return true;
@@ -3517,61 +3517,61 @@ namespace System.Management.Automation.Language
                     switch (suffix)
                     {
                         case NumberSuffixFlags.SignedByte:
-                            if (Utils.TryConvertSByte(bigValue, out sbyte sbyteValue))
+                            if (Utils.TryConvert<sbyte>(bigValue, out sbyte sbyteValue))
                             {
                                 result = sbyteValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.UnsignedByte:
-                            if (Utils.TryConvertByte(bigValue, out byte byteValue))
+                            if (Utils.TryConvert<byte>(bigValue, out byte byteValue))
                             {
                                 result = byteValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.Short:
-                            if (Utils.TryConvertInt16(bigValue, out short shortValue))
+                            if (Utils.TryConvert<short>(bigValue, out short shortValue))
                             {
                                 result = shortValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.Long:
-                            if (Utils.TryConvertInt64(bigValue, out long longValue))
+                            if (Utils.TryConvert<long>(bigValue, out long longValue))
                             {
                                 result = longValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.UnsignedShort:
-                            if (Utils.TryConvertUInt16(bigValue, out ushort ushortValue))
+                            if (Utils.TryConvert<ushort>(bigValue, out ushort ushortValue))
                             {
                                 result = ushortValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.Unsigned:
-                            if (Utils.TryConvertUInt32(bigValue, out uint uintValue))
+                            if (Utils.TryConvert<uint>(bigValue, out uint uintValue))
                             {
                                 result = uintValue;
                                 return true;
                             }
-                            else if (Utils.TryConvertUInt64(bigValue, out ulong ulongFromUint))
+                            else if (Utils.TryConvert<ulong>(bigValue, out ulong ulongFromUint))
                             {
                                 result = ulongFromUint;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.UnsignedLong:
-                            if (Utils.TryConvertUInt64(bigValue, out ulong ulongValue))
+                            if (Utils.TryConvert<ulong>(bigValue, out ulong ulongValue))
                             {
                                 result = ulongValue;
                                 return true;
                             }
                             break;
                         case NumberSuffixFlags.Decimal:
-                            if (Utils.TryConvertDecimal(bigValue, out decimal decimalValue))
+                            if (Utils.TryConvert<decimal>(bigValue, out decimal decimalValue))
                             {
                                 result = decimalValue;
                                 return true;
@@ -3582,17 +3582,17 @@ namespace System.Management.Automation.Language
                             return true;
                         // No suffix specified; we have to work out the appropriate data format
                         case NumberSuffixFlags.None:
-                            if (Utils.TryConvertInt32(bigValue, out int intNoSuffix))
+                            if (Utils.TryConvert<int>(bigValue, out int intNoSuffix))
                             {
                                 result = intNoSuffix;
                                 return true;
                             }
-                            else if (Utils.TryConvertInt64(bigValue, out long longNoSuffix))
+                            else if (Utils.TryConvert<long>(bigValue, out long longNoSuffix))
                             {
                                 result = longNoSuffix;
                                 return true;
                             }
-                            else if (Utils.TryConvertDecimal(bigValue, out decimal decimalNoSuffix))
+                            else if (Utils.TryConvert<decimal>(bigValue, out decimal decimalNoSuffix))
                             {
                                 result = decimalNoSuffix;
                                 return true;
@@ -3602,7 +3602,7 @@ namespace System.Management.Automation.Language
                                 // Result is too big for anything else; fallback to Double or BigInteger (if hex)
                                 if (format == NumberFormat.Decimal)
                                 {
-                                    if (Utils.TryConvertDouble(bigValue, out double doubleNoSuffix))
+                                    if (Utils.TryConvert<double>(bigValue, out double doubleNoSuffix))
                                     {
                                         result = doubleNoSuffix;
                                         return true;
