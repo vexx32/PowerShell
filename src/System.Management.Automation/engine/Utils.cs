@@ -94,7 +94,7 @@ namespace System.Management.Automation
 
             (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
 
-            if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
+            if (value < minValue || value > maxValue)
             {
                 outValue = default(T);
                 return false;
