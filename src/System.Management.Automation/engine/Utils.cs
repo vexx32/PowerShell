@@ -34,219 +34,173 @@ namespace System.Management.Automation
     /// </summary>
     internal static class Utils
     {
-        internal static bool TryConvertSByte(double value, out sbyte outValue)
+        internal static bool TryConvert<T>(double value, out T outValue) where T : struct
         {
-            if (value < sbyte.MinValue || value > sbyte.MaxValue)
+            switch (typeof(T))
             {
-                outValue = 0;
-                return false;
+                case Type t when t == typeof(sbyte):
+                    if (value < sbyte.MinValue || value > sbyte.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(byte):
+                    if (value < byte.MinValue || value > byte.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(short):
+                    if (value < short.MinValue || value > short.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(ushort):
+                    if (value < ushort.MinValue || value > ushort.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(int):
+                    if (value < int.MinValue || value > int.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(uint):
+                    if (value < uint.MinValue || value > uint.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(long):
+                    if (value < long.MinValue || value > long.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(ulong):
+                    if (value < ulong.MinValue || value > ulong.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                default:
+                    outValue = default(T);
+                    return false;
             }
 
-            outValue = (sbyte)Math.Round(value);
+            outValue = (T)(object)Math.Round(value);
             return true;
         }
 
-        internal static bool TryConvertSByte(BigInteger value, out sbyte outValue)
+        internal static bool TryConvert<T>(BigInteger value, out T outValue) where T : struct
         {
-            if (value < sbyte.MinValue || value > sbyte.MaxValue)
+            switch (typeof(T))
             {
-                outValue = 0;
-                return false;
+                case Type t when t == typeof(sbyte):
+                    if (value < sbyte.MinValue || value > sbyte.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(byte):
+                    if (value < byte.MinValue || value > byte.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(short):
+                    if (value < short.MinValue || value > short.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(ushort):
+                    if (value < ushort.MinValue || value > ushort.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(int):
+                    if (value < int.MinValue || value > int.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(uint):
+                    if (value < uint.MinValue || value > uint.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(long):
+                    if (value < long.MinValue || value > long.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(ulong):
+                    if (value < ulong.MinValue || value > ulong.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(decimal):
+                    if (value < (BigInteger)decimal.MinValue || value > (BigInteger)decimal.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                case Type t when t == typeof(double):
+                    if (value < (BigInteger)double.MinValue || value > (BigInteger)double.MaxValue)
+                    {
+                        outValue = default(T);
+                        return false;
+                    }
+
+                    break;
+                default:
+                    outValue = default(T);
+                    return false;
             }
 
-            outValue = (sbyte)value;
-            return true;
-        }
-
-        internal static bool TryConvertByte(double value, out byte outValue)
-        {
-            if (value < byte.MinValue || value > byte.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (byte)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertByte(BigInteger value, out byte outValue)
-        {
-            if (value < byte.MinValue || value > byte.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (byte)value;
-            return true;
-        }
-
-        internal static bool TryConvertInt16(double value, out short outValue)
-        {
-            if (value < short.MinValue || value > short.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (short)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertInt16(BigInteger value, out short outValue)
-        {
-            if (value < short.MinValue || value > short.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (short)value;
-            return true;
-        }
-
-        internal static bool TryConvertUInt16(double value, out ushort outValue)
-        {
-            if (value < ushort.MinValue || value > ushort.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (ushort)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertUInt16(BigInteger value, out ushort outValue)
-        {
-            if (value < ushort.MinValue || value > ushort.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (ushort)value;
-            return true;
-        }
-
-        internal static bool TryConvertInt32(double value, out int outValue)
-        {
-            if (value < int.MinValue || value > int.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (int)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertInt32(BigInteger value, out int outValue)
-        {
-            if (value < int.MinValue || value > int.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (int)value;
-            return true;
-        }
-
-        internal static bool TryConvertUInt32(double value, out uint outValue)
-        {
-            if (value < uint.MinValue || value > uint.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (uint)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertUInt32(BigInteger value, out uint outValue)
-        {
-            if (value < uint.MinValue || value > uint.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (uint)value;
-            return true;
-        }
-
-        internal static bool TryConvertInt64(double value, out long outValue)
-        {
-            if (value < long.MinValue || value > long.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (long)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertInt64(BigInteger value, out long outValue)
-        {
-            if (value < long.MinValue || value > long.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (long)value;
-            return true;
-        }
-
-        internal static bool TryConvertUInt64(double value, out ulong outValue)
-        {
-            if (value < ulong.MinValue || value > ulong.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (ulong)Math.Round(value);
-            return true;
-        }
-
-        internal static bool TryConvertUInt64(BigInteger value, out ulong outValue)
-        {
-            if (value < ulong.MinValue || value > ulong.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (ulong)value;
-            return true;
-        }
-
-        internal static bool TryConvertDecimal(BigInteger value, out decimal outValue)
-        {
-            if (value < (BigInteger)decimal.MinValue || value > (BigInteger)decimal.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (decimal)value;
-            return true;
-        }
-
-        internal static bool TryConvertDouble(BigInteger value, out double outValue)
-        {
-            if (value < (BigInteger)double.MinValue || value > (BigInteger)double.MaxValue)
-            {
-                outValue = 0;
-                return false;
-            }
-
-            outValue = (double)value;
+            outValue = (T)(object)value;
             return true;
         }
 
