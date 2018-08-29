@@ -107,7 +107,7 @@ namespace System.Management.Automation
                     return false;
             }
 
-            outValue = (T)(object)Math.Round(value);
+            outValue = LanguagePrimitives.ConvertTo<T>(Math.Round(value));
             return true;
         }
 
@@ -200,7 +200,7 @@ namespace System.Management.Automation
                     return false;
             }
 
-            outValue = (T)(object)value;
+            outValue = LanguagePrimitives.ConvertTo<T>(value);
             return true;
         }
 
