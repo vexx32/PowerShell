@@ -3526,9 +3526,13 @@ namespace System.Management.Automation.Language
                                 case int n when (n <= 16):
                                     suffix |= NumberSuffixFlags.Short;
                                     break;
-                                // 17-63 will follow the standard (U)Int32/64 code paths
-                                case 64:
+                                case int n when (n <= 32):
+                                    break;
+                                case int n when (n <= 64):
                                     suffix |= NumberSuffixFlags.Long;
+                                    break;
+                                default:
+                                    suffix = NumberSuffixFlags.None;
                                     break;
                             }
                         }
