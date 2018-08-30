@@ -64,6 +64,7 @@ namespace System.Management.Automation
             { typeof(decimal), new PrimitiveRange((BigInteger)decimal.MinValue, (BigInteger)decimal.MaxValue) },
             { typeof(double), new PrimitiveRange((BigInteger)double.MinValue, (BigInteger)double.MaxValue) },
         };
+
         internal static bool TryConvert<T>(double value, out T outValue) where T : struct
         {
             if (!s_typeBounds.ContainsKey(typeof(T)))
@@ -121,9 +122,29 @@ namespace System.Management.Automation
                     result = unsigned ? (BigInteger)Convert.ToUInt64(digits.ToString(), 2) : Convert.ToInt64(digits.ToString(), 2);
                     return true;
                 default:
+                    return TryParseBigBinary(digits, unsigned, out result);
+            }
+        }
+
+        private static bool TryParseBigBinary(ReadOnlySpan<char> digits, bool unsigned, out BigInteger result)
+        {
+            BigInteger value = 0;
+
+            for (int i = 0; i < digits.Length; i++)
+            {
+                if (digits[i] == '1')
+                {
+                    value += BigInteger.Pow(2, digits.Length - i);
+                }
+                else if (digits[i] != '0')
+                {
                     result = 0;
                     return false;
+                }
             }
+
+            result = unsigned ? value : value - BigInteger.Pow(2, digits.Length);
+            return true;
         }
 
         // From System.Web.Util.HashCodeCombiner
