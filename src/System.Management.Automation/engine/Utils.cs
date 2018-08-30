@@ -122,29 +122,22 @@ namespace System.Management.Automation
                     result = unsigned ? (BigInteger)Convert.ToUInt64(digits.ToString(), 2) : Convert.ToInt64(digits.ToString(), 2);
                     return true;
                 default:
-                    return TryParseBigBinary(digits, unsigned, out result);
+                    result = ParseBigBinary(digits, unsigned);
+                    return true;
             }
         }
 
-        private static bool TryParseBigBinary(ReadOnlySpan<char> digits, bool unsigned, out BigInteger result)
+        private static BigInteger ParseBigBinary(ReadOnlySpan<char> digits, bool unsigned)
         {
             BigInteger value = 0;
+            unsigned = unsigned || (digits[0] == '0');
 
             for (int i = 0; i < digits.Length; i++)
             {
-                if (digits[i] == '1')
-                {
-                    value += BigInteger.Pow(2, digits.Length - i);
-                }
-                else if (digits[i] != '0')
-                {
-                    result = 0;
-                    return false;
-                }
+                value += (digits[i] == '1') ? BigInteger.Pow(2, digits.Length - i - 1) : 0;
             }
 
-            result = unsigned ? value : value - BigInteger.Pow(2, digits.Length);
-            return true;
+            return unsigned ? value : (value - BigInteger.Pow(2, digits.Length));
         }
 
         // From System.Web.Util.HashCodeCombiner
