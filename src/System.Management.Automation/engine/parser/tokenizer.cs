@@ -540,7 +540,8 @@ namespace System.Management.Automation.Language
     /// <summary>
     /// Indicates the format of a numeric literal
     /// </summary>
-    internal enum NumberFormat {
+    internal enum NumberFormat
+    {
         /// <summary>
         /// Indicates standard decimal literal, no necessary prefix.
         /// </summary>
