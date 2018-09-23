@@ -537,11 +537,23 @@ namespace System.Management.Automation.Language
         BigInteger = 0x20
     }
 
+    /// <summary>
+    /// Indicates the format of a numeric literal
+    /// </summary>
     internal enum NumberFormat {
+        /// <summary>
+        /// Indicates standard decimal literal, no necessary prefix.
+        /// </summary>
         Decimal = 0x0,
 
+        /// <summary>
+        /// Indicates hexadecimal literal, with '0x' prefix.
+        /// </summary>
         Hex = 0x1,
 
+        /// <summary>
+        /// Indicates binary literal, with '0b' prefix.
+        /// </summary>
         Binary = 0x2
     }
 
@@ -3245,27 +3257,6 @@ namespace System.Management.Automation.Language
 
         #region Numbers
 
-        private void ScanHexDigits(StringBuilder sb)
-        {
-            char c = PeekChar();
-            while (c.IsHexDigit())
-            {
-                SkipChar();
-                sb.Append(c);
-                c = PeekChar();
-                if (c == '_')
-                {
-                    SkipChar();
-                    c = PeekChar();
-                    if (c == '_' || !c.IsHexDigit())
-                    {
-                        // Double underscore, or a trailing underscore are not valid formats
-                        UngetChar();
-                        break;
-                    }
-                }
-            }
-        }
         private void ScanBinaryDigits(StringBuilder sb)
         {
             char c = PeekChar();
@@ -3287,6 +3278,29 @@ namespace System.Management.Automation.Language
                 }
             }
         }
+
+        private void ScanHexDigits(StringBuilder sb)
+        {
+            char c = PeekChar();
+            while (c.IsHexDigit())
+            {
+                SkipChar();
+                sb.Append(c);
+                c = PeekChar();
+                if (c == '_')
+                {
+                    SkipChar();
+                    c = PeekChar();
+                    if (c == '_' || !c.IsHexDigit())
+                    {
+                        // Double underscore, or a trailing underscore are not valid formats
+                        UngetChar();
+                        break;
+                    }
+                }
+            }
+        }
+
         private int ScanDecimalDigits(StringBuilder sb)
         {
             int countDigits = 0;
@@ -3498,6 +3512,7 @@ namespace System.Management.Automation.Language
                     }
 
                     BigInteger bigValue;
+
                     if (format == NumberFormat.Binary)
                     {
                         if (!strNum[0].IsBinaryDigit())
@@ -3536,7 +3551,6 @@ namespace System.Management.Automation.Language
                                     break;
                             }
                         }
-
                     }
                     else
                     {
