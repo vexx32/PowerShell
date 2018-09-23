@@ -287,16 +287,6 @@ namespace System.Management.Automation.Language
             return char.IsLetterOrDigit(c);
         }
 
-        // Return true if the character is a hexadecimal digit.
-        internal static bool IsHexDigit(this char c)
-        {
-            if (c < 128)
-            {
-                return (s_traits[c] & CharTraits.HexDigit) != 0;
-            }
-            return false;
-        }
-
         // Return true if the character is a binary digit.
         internal static bool IsBinaryDigit(this char c)
         {
@@ -313,6 +303,16 @@ namespace System.Management.Automation.Language
             if (c < 128)
             {
                 return (s_traits[c] & CharTraits.Digit) != 0;
+            }
+            return false;
+        }
+
+        // Return true if the character is a hexadecimal digit.
+        internal static bool IsHexDigit(this char c)
+        {
+            if (c < 128)
+            {
+                return (s_traits[c] & CharTraits.HexDigit) != 0;
             }
             return false;
         }
