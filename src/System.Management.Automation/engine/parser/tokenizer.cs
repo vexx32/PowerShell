@@ -3382,7 +3382,7 @@ namespace System.Management.Automation.Language
                     if (numberKind.suffix == NumberSuffixFlags.Decimal)
                     {
                         decimal d;
-                        if (Decimal.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out d))
+                        if (decimal.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out d))
                         {
                             result = d * multiplier;
                             return true;
@@ -3394,7 +3394,7 @@ namespace System.Management.Automation.Language
 
                     if (numberKind.real)
                     {
-                        if (Double.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out double doubleValue))
+                        if (double.TryParse(strNum, style, NumberFormatInfo.InvariantInfo, out double doubleValue))
                         {
                             // TryParse incorrectly return +0 when the result should be -0, so check for that case
                             if (doubleValue == 0.0 && strNum[0] == '-')
@@ -3508,20 +3508,19 @@ namespace System.Management.Automation.Language
                             }
                         }
 
-                        // If the string isn't at a length where we expect a signing bit
-                        // or it's flagged as unsigned
-                        if ((numberKind.suffix.HasFlag(NumberSuffixFlags.Unsigned) || (strNum.Length & 7) != 0) && strNum[0] != 0)
+                        // If the string isn't at a length where we expect a signing bit or it's flagged as unsigned
+                        if (strNum[0] != 0 && (numberKind.suffix.HasFlag(NumberSuffixFlags.Unsigned) ||  (strNum.Length & 7) != 0))
                         {
                             // Allocate new span
-                            Span<char> newSpan = new Span<char>(new char[strNum.Length + 1]);
+                            Span<char> tempSpan = new Span<char>(new char[strNum.Length + 1]);
 
                             // Insert 0 prefix so BigInt doesn't use the high bit as a sign bit
-                            newSpan[0] = '0';
+                            tempSpan[0] = '0';
 
                             // Copy original digits into the new span after the 0
-                            strNum.CopyTo(newSpan.Slice(1));
+                            strNum.CopyTo(tempSpan.Slice(1));
 
-                            strNum = newSpan;
+                            strNum = tempSpan;
                         }
                     }
 
@@ -3694,7 +3693,8 @@ namespace System.Management.Automation.Language
 
         private Token ScanNumber(char firstChar)
         {
-            Diagnostics.Assert(firstChar == '.' || (firstChar >= '0' && firstChar <= '9')
+            Diagnostics.Assert(
+                firstChar == '.' || (firstChar >= '0' && firstChar <= '9')
                 || (AllowSignedNumbers && (firstChar == '+' || firstChar.IsDash())), "Number must start with '.', '-', or digit.");
 
             (NumberFormat format, NumberSuffixFlags suffix, bool real) numberKind;
