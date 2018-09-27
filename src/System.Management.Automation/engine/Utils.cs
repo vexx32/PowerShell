@@ -36,33 +36,33 @@ namespace System.Management.Automation
     {
         private struct PrimitiveRange
         {
-            internal readonly BigInteger MinValue;
-            internal readonly BigInteger MaxValue;
+            internal readonly BigInteger minValue;
+            internal readonly BigInteger maxValue;
 
             internal PrimitiveRange(BigInteger min, BigInteger max)
             {
-                this.MinValue = min;
-                this.MaxValue = max;
+                this.minValue = min;
+                this.maxValue = max;
             }
 
             internal void Deconstruct(out BigInteger min, out BigInteger max)
             {
-                min = this.MinValue;
-                max = this.MaxValue;
+                min = this.minValue;
+                max = this.maxValue;
             }
         }
 
-        private static readonly Dictionary<Type, PrimitiveRange> s_typeBounds = new Dictionary<Type, PrimitiveRange>() {
-            { typeof(sbyte), new PrimitiveRange(sbyte.MinValue, sbyte.MaxValue) },
-            { typeof(byte), new PrimitiveRange(byte.MinValue, byte.MaxValue) },
-            { typeof(short), new PrimitiveRange(short.MinValue, short.MaxValue) },
-            { typeof(ushort), new PrimitiveRange(ushort.MinValue, ushort.MaxValue) },
-            { typeof(int), new PrimitiveRange(int.MinValue, int.MaxValue) },
-            { typeof(uint), new PrimitiveRange(uint.MinValue, uint.MaxValue) },
-            { typeof(long), new PrimitiveRange(long.MinValue, long.MaxValue) },
-            { typeof(ulong), new PrimitiveRange(ulong.MinValue, ulong.MaxValue) },
+        private static readonly var s_typeBounds = new Dictionary<Type, PrimitiveRange>() {
+            { typeof(sbyte),   new PrimitiveRange(sbyte.MinValue, sbyte.MaxValue) },
+            { typeof(byte),    new PrimitiveRange(byte.MinValue, byte.MaxValue) },
+            { typeof(short),   new PrimitiveRange(short.MinValue, short.MaxValue) },
+            { typeof(ushort),  new PrimitiveRange(ushort.MinValue, ushort.MaxValue) },
+            { typeof(int),     new PrimitiveRange(int.MinValue, int.MaxValue) },
+            { typeof(uint),    new PrimitiveRange(uint.MinValue, uint.MaxValue) },
+            { typeof(long),    new PrimitiveRange(long.MinValue, long.MaxValue) },
+            { typeof(ulong),   new PrimitiveRange(ulong.MinValue, ulong.MaxValue) },
             { typeof(decimal), new PrimitiveRange((BigInteger)decimal.MinValue, (BigInteger)decimal.MaxValue) },
-            { typeof(double), new PrimitiveRange((BigInteger)double.MinValue, (BigInteger)double.MaxValue) },
+            { typeof(double),  new PrimitiveRange((BigInteger)double.MinValue, (BigInteger)double.MaxValue) },
         };
 
         internal static bool TryConvert<T>(double value, out T outValue) where T : struct
@@ -75,7 +75,7 @@ namespace System.Management.Automation
 
             (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
 
-            if ((BigInteger)value < minValue || (BigInteger)value > maxValue)
+            if (minValue > (BigInteger)value || (BigInteger)value > maxValue)
             {
                 outValue = default(T);
                 return false;
@@ -95,7 +95,7 @@ namespace System.Management.Automation
 
             (BigInteger minValue, BigInteger maxValue) = s_typeBounds[typeof(T)];
 
-            if (value < minValue || value > maxValue)
+            if (minValue > value || value > maxValue)
             {
                 outValue = default(T);
                 return false;
