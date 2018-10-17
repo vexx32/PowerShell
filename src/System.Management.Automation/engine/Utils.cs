@@ -222,10 +222,10 @@ namespace System.Management.Automation
                 // The low bits are added in separately to allow us to strip the higher 'noise' bits before we
                 // sum the values using binary-or.
                 //
+                // Simplified representation of logic:     (byte)( (7)|(6)|(5)|(4) ) | ( ( (3)|(2)|(1)|(0) ) & 0b1111 )
+                //
                 // N.B.: This code has been tested against a straight for loop iterating through the byte, and in no
                 // circumstance was it faster or more effective than this unrolled version.
-                //
-                // Simplified representation of logic:     (byte)( (7)|(6)|(5)|(4) ) | ( ( (3)|(2)|(1)|(0) ) & 0b1111 )
                 outputBytes[outputByteIndex--] =
                     (byte)(
                         ( (digits[byteWalker - 7] << 7)
