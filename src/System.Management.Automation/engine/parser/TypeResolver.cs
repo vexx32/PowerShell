@@ -726,6 +726,7 @@ namespace System.Management.Automation
                     { typeof(Array),                                       new[] { "array" } },
                     { typeof(bool),                                        new[] { "bool" } },
                     { typeof(byte),                                        new[] { "byte" } },
+                    { typeof(Complex),                                     new[] { "complex" } },
                     { typeof(char),                                        new[] { "char" } },
                     { typeof(CmdletBindingAttribute),                      new[] { "CmdletBinding" } },
                     { typeof(DateTime),                                    new[] { "datetime" } },

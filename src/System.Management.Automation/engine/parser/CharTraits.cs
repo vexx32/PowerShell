@@ -180,7 +180,7 @@ namespace System.Management.Automation.Language
 /*        f */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.HexDigit,
 /*        g */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.MultiplierStart,
 /*        h */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
-/*        i */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
+/*        i */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.TypeSuffix,
 /*        j */ CharTraits.IdentifierStart | CharTraits.VarNameFirst,
 /*        k */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.MultiplierStart,
 /*        l */ CharTraits.IdentifierStart | CharTraits.VarNameFirst | CharTraits.TypeSuffix,

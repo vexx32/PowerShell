@@ -534,7 +534,12 @@ namespace System.Management.Automation.Language
         /// <summary>
         /// Indicates 'I' suffix for BigInteger (arbitrarily large integer) numerals.
         /// </summary>
-        BigInteger = 0x20
+        BigInteger = 0x20,
+
+        /// <summary>
+        /// Insidates 'i' suffix for Complex numerals.
+        /// </summary>
+        Complex = 0x40
     }
 
     /// <summary>
@@ -3475,6 +3480,9 @@ namespace System.Management.Automation.Language
                                 case NumberSuffixFlags.BigInteger:
                                     result = doubleValue.AsBigInt();
                                     return true;
+                                case NumberSuffixFlags.Complex:
+                                    result = new Complex(0, doubleValue);
+                                    return true;
                             }
 
                             // Invalid NumberSuffixFlags combination, or outside bounds of specified type.
@@ -3637,6 +3645,14 @@ namespace System.Management.Automation.Language
                             if (Utils.TryCast(bigValue, out decimal dm))
                             {
                                 result = dm;
+                                return true;
+                            }
+
+                            break;
+                        case NumberSuffixFlags.Complex:
+                            if (Utils.TryCast(bigValue, out double d_c))
+                            {
+                                result = new Complex(0, d_c);
                                 return true;
                             }
 
@@ -3862,6 +3878,9 @@ namespace System.Management.Automation.Language
                         break;
                     case 'I':
                         suffix |= NumberSuffixFlags.BigInteger;
+                        break;
+                    case 'i':
+                        suffix |= NumberSuffixFlags.Complex;
                         break;
                     default:
                         notNumber = true;
