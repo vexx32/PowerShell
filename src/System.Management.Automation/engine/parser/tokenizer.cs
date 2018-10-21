@@ -3477,11 +3477,11 @@ namespace System.Management.Automation.Language
                                     }
 
                                     break;
-                                case NumberSuffixFlags.BigInteger:
-                                    result = doubleValue.AsBigInt();
-                                    return true;
                                 case NumberSuffixFlags.Complex:
                                     result = new Complex(0, doubleValue);
+                                    return true;
+                                case NumberSuffixFlags.BigInteger:
+                                    result = doubleValue.AsBigInt();
                                     return true;
                             }
 
