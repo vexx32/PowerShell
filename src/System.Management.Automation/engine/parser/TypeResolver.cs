@@ -751,6 +751,7 @@ namespace System.Management.Automation
                     { typeof(int),                                         new[] { "int", "int32" } },
                     { typeof(Int16),                                       new[] { "short", "int16" } },
                     { typeof(long),                                        new[] { "long", "int64" } },
+                    { typeof(List<>),                                        new[] { "list" } },
                     { typeof(CimInstance),                                 new[] { "ciminstance" } },
                     { typeof(CimClass),                                    new[] { "cimclass" } },
                     { typeof(Microsoft.Management.Infrastructure.CimType), new[] { "cimtype" } },
