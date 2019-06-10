@@ -17,132 +17,80 @@ namespace Microsoft.PowerShell.Commands
     /// <summary>
     /// This class implements get-member command.
     /// </summary>
-    [Cmdlet(VerbsCommon.Add, "Member", DefaultParameterSetName = "TypeNameSet",
+    [Cmdlet(VerbsCommon.Add, "Member", DefaultParameterSetName = TypeNameSet,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113280", RemotingCapability = RemotingCapability.None)]
     public class AddMemberCommand : PSCmdlet
     {
-        private static readonly object s_notSpecified = new object();
-        private static bool HasBeenSpecified(object obj)
-        {
-            return !System.Object.ReferenceEquals(obj, s_notSpecified);
-        }
+        private static readonly object _valueNotSpecified = new object();
+        private static bool HasBeenSpecified(object obj) => !System.Object.ReferenceEquals(obj, _valueNotSpecified);
 
-        private PSObject _inputObject;
         /// <summary>
         /// The object to add a member to.
         /// </summary>
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "MemberSet")]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "TypeNameSet")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = TypeNameSet)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = NotePropertySingleMemberSet)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = NotePropertyMultiMemberSet)]
-        public PSObject InputObject
-        {
-            set { _inputObject = value; }
+        public PSObject InputObject { get; set; }
 
-            get { return _inputObject; }
-        }
-
-        private PSMemberTypes _memberType;
         /// <summary>
         /// The member type of to be added.
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "MemberSet")]
         [Alias("Type")]
-        public PSMemberTypes MemberType
-        {
-            set { _memberType = value; }
+        public PSMemberTypes MemberType { get; set; }
 
-            get { return _memberType; }
-        }
-
-        private string _memberName;
         /// <summary>
         /// The name of the new member.
         /// </summary>
         [Parameter(Mandatory = true, Position = 1, ParameterSetName = "MemberSet")]
-        public string Name
-        {
-            set { _memberName = value; }
+        public string Name { get; set; }
 
-            get { return _memberName; }
-        }
-
-        private object _value1 = s_notSpecified;
         /// <summary>
         /// First value of the new member. The meaning of this value changes according to the member type.
         /// </summary>
         [Parameter(Position = 2, ParameterSetName = "MemberSet")]
-        public object Value
-        {
-            set { _value1 = value; }
+        public object Value { get; set; } = _valueNotSpecified;
 
-            get { return _value1; }
-        }
-
-        private object _value2 = s_notSpecified;
         /// <summary>
         /// Second value of the new member. The meaning of this value changes according to the member type.
         /// </summary>
         [Parameter(Position = 3, ParameterSetName = "MemberSet")]
-        public object SecondValue
-        {
-            set { _value2 = value; }
+        public object SecondValue { get; set; } = _valueNotSpecified;
 
-            get { return _value2; }
-        }
-
-        private string _typeName;
         /// <summary>
         /// Add new type name to the specified object for TypeNameSet.
         /// </summary>
-        [Parameter(Mandatory = true, ParameterSetName = "TypeNameSet")]
+        [Parameter(Mandatory = true, ParameterSetName = TypeNameSet)]
         [Parameter(ParameterSetName = "MemberSet")]
         [Parameter(ParameterSetName = NotePropertySingleMemberSet)]
         [Parameter(ParameterSetName = NotePropertyMultiMemberSet)]
         [ValidateNotNullOrEmpty]
-        public string TypeName
-        {
-            set { _typeName = value; }
+        public string TypeName { get; set; }
 
-            get { return _typeName; }
-        }
-
-        private bool _force;
         /// <summary>
         /// True if we should overwrite a possibly existing member.
         /// </summary>
         [Parameter(ParameterSetName = "MemberSet")]
         [Parameter(ParameterSetName = NotePropertySingleMemberSet)]
         [Parameter(ParameterSetName = NotePropertyMultiMemberSet)]
-        public SwitchParameter Force
-        {
-            set { _force = value; }
-
-            get { return _force; }
-        }
-
-        private bool _passThru /* = false */;
+        public SwitchParameter Force { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter -passThru which states output from the command should be placed in the pipeline.
         /// </summary>
         [Parameter(ParameterSetName = "MemberSet")]
-        [Parameter(ParameterSetName = "TypeNameSet")]
+        [Parameter(ParameterSetName = TypeNameSet)]
         [Parameter(ParameterSetName = NotePropertySingleMemberSet)]
         [Parameter(ParameterSetName = NotePropertyMultiMemberSet)]
-        public SwitchParameter PassThru
-        {
-            set { _passThru = value; }
-
-            get { return _passThru; }
-        }
+        public SwitchParameter PassThru { get; set; }
 
         #region Simplifying NoteProperty Declaration
 
+        private const string TypeNameSet = "TypeNameSet";
         private const string NotePropertySingleMemberSet = "NotePropertySingleMemberSet";
         private const string NotePropertyMultiMemberSet = "NotePropertyMultiMemberSet";
 
-        private string _notePropertyName;
         /// <summary>
         /// The name of the new NoteProperty member.
         /// </summary>
@@ -150,94 +98,75 @@ namespace Microsoft.PowerShell.Commands
         [ValidateNotePropertyNameAttribute()]
         [NotePropertyTransformationAttribute()]
         [ValidateNotNullOrEmpty]
-        public string NotePropertyName
-        {
-            set { _notePropertyName = value; }
+        public string NotePropertyName { get; set; }
 
-            get { return _notePropertyName; }
-        }
-
-        private object _notePropertyValue;
         /// <summary>
         /// The value of the new NoteProperty member.
         /// </summary>
         [Parameter(Mandatory = true, Position = 1, ParameterSetName = NotePropertySingleMemberSet)]
         [AllowNull]
-        public object NotePropertyValue
-        {
-            set { _notePropertyValue = value; }
-
-            get { return _notePropertyValue; }
-        }
-
-        // Use IDictionary to support both Hashtable and OrderedHashtable
-        private IDictionary _property;
+        public object NotePropertyValue { get; set; }
 
         /// <summary>
-        /// The NoteProperty members to be set.
+        /// The NoteProperty members to be set. Uses IDictionary to support both Hashtable and OrderedHashtable.
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = NotePropertyMultiMemberSet)]
         [ValidateNotNullOrEmpty]
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public IDictionary NotePropertyMembers
-        {
-            get { return _property; }
-
-            set { _property = value; }
-        }
+        public IDictionary NotePropertyMembers { get; set; }
 
         #endregion Simplifying NoteProperty Declaration
 
         private static object GetParameterType(object sourceValue, Type destinationType)
-        {
-            return LanguagePrimitives.ConvertTo(sourceValue, destinationType, CultureInfo.InvariantCulture);
-        }
+            => LanguagePrimitives.ConvertTo(sourceValue, destinationType, CultureInfo.InvariantCulture);
 
         private void EnsureValue1AndValue2AreNotBothNull()
         {
-            if (_value1 == null &&
-               (_value2 == null || !HasBeenSpecified(_value2)))
+            if (Value == null
+                && (SecondValue == null || !HasBeenSpecified(SecondValue)))
             {
-                ThrowTerminatingError(NewError("Value1AndValue2AreNotBothNull", "Value1AndValue2AreNotBothNull", null, _memberType));
+                ThrowTerminatingError(NewError("Value1AndValue2AreNotBothNull", "Value1AndValue2AreNotBothNull", null, MemberType));
             }
         }
 
         private void EnsureValue1IsNotNull()
         {
-            if (_value1 == null)
+            if (Value == null)
             {
-                ThrowTerminatingError(NewError("Value1ShouldNotBeNull", "Value1ShouldNotBeNull", null, _memberType));
+                ThrowTerminatingError(NewError("Value1ShouldNotBeNull", "Value1ShouldNotBeNull", null, MemberType));
             }
         }
 
         private void EnsureValue2IsNotNull()
         {
-            if (_value2 == null)
+            if (SecondValue == null)
             {
-                ThrowTerminatingError(NewError("Value2ShouldNotBeNull", "Value2ShouldNotBeNull", null, _memberType));
+                ThrowTerminatingError(NewError("Value2ShouldNotBeNull", "Value2ShouldNotBeNull", null, MemberType));
             }
         }
 
         private void EnsureValue1HasBeenSpecified()
         {
-            if (!HasBeenSpecified(_value1))
+            if (!HasBeenSpecified(Value))
             {
-                Collection<FieldDescription> fdc = new Collection<FieldDescription>();
-                fdc.Add(new FieldDescription("Value"));
-                string prompt = StringUtil.Format(AddMember.Value1Prompt, _memberType);
-                Dictionary<string, PSObject> result = this.Host.UI.Prompt(prompt, null, fdc);
+                var fieldDescriptors = new Collection<FieldDescription>
+                {
+                    new FieldDescription("Value")
+                };
+                var prompt = StringUtil.Format(AddMember.Value1Prompt, MemberType);
+                Dictionary<string, PSObject> result = Host.UI.Prompt(prompt, null, fieldDescriptors);
                 if (result != null)
                 {
-                    _value1 = result["Value"].BaseObject;
+                    Value = result["Value"].BaseObject;
                 }
             }
         }
 
         private void EnsureValue2HasNotBeenSpecified()
         {
-            if (HasBeenSpecified(_value2))
+            if (HasBeenSpecified(SecondValue))
             {
-                ThrowTerminatingError(NewError("Value2ShouldNotBeSpecified", "Value2ShouldNotBeSpecified", null, _memberType));
+                ThrowTerminatingError(NewError("Value2ShouldNotBeSpecified", "Value2ShouldNotBeSpecified", null, MemberType));
             }
         }
 
@@ -246,15 +175,15 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue1HasBeenSpecified();
             EnsureValue1IsNotNull();
 
-            string value1Str = (string)GetParameterType(_value1, typeof(string));
-            if (HasBeenSpecified(_value2))
+            var value1Str = (string)GetParameterType(Value, typeof(string));
+            if (HasBeenSpecified(SecondValue))
             {
                 EnsureValue2IsNotNull();
-                Type value2Type = (Type)GetParameterType(_value2, typeof(Type));
-                return new PSAliasProperty(_memberName, value1Str, value2Type);
+                var value2Type = (Type)GetParameterType(SecondValue, typeof(Type));
+                return new PSAliasProperty(Name, value1Str, value2Type);
             }
 
-            return new PSAliasProperty(_memberName, value1Str);
+            return new PSAliasProperty(Name, value1Str);
         }
 
         private PSMemberInfo GetCodeMethod()
@@ -262,8 +191,9 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue1HasBeenSpecified();
             EnsureValue1IsNotNull();
             EnsureValue2HasNotBeenSpecified();
-            MethodInfo value1MethodInfo = (MethodInfo)GetParameterType(_value1, typeof(MethodInfo));
-            return new PSCodeMethod(_memberName, value1MethodInfo);
+
+            MethodInfo value1MethodInfo = (MethodInfo)GetParameterType(Value, typeof(MethodInfo));
+            return new PSCodeMethod(Name, value1MethodInfo);
         }
 
         private PSMemberInfo GetCodeProperty()
@@ -271,39 +201,35 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue1HasBeenSpecified();
             EnsureValue1AndValue2AreNotBothNull();
 
-            MethodInfo value1MethodInfo = null;
-            if (HasBeenSpecified(_value1))
-            {
-                value1MethodInfo = (MethodInfo)GetParameterType(_value1, typeof(MethodInfo));
-            }
+            MethodInfo value1MethodInfo = HasBeenSpecified(Value)
+                ? (MethodInfo)GetParameterType(Value, typeof(MethodInfo))
+                : null;
 
-            MethodInfo value2MethodInfo = null;
-            if (HasBeenSpecified(_value2))
-            {
-                value2MethodInfo = (MethodInfo)GetParameterType(_value2, typeof(MethodInfo));
-            }
+            MethodInfo value2MethodInfo = HasBeenSpecified(SecondValue)
+                ? (MethodInfo)GetParameterType(SecondValue, typeof(MethodInfo))
+                : null;
 
-            return new PSCodeProperty(_memberName, value1MethodInfo, value2MethodInfo);
+            return new PSCodeProperty(Name, value1MethodInfo, value2MethodInfo);
         }
 
         private PSMemberInfo GetMemberSet()
         {
             EnsureValue2HasNotBeenSpecified();
-            if (_value1 == null || !HasBeenSpecified(_value1))
+            if (Value == null || !HasBeenSpecified(Value))
             {
-                return new PSMemberSet(_memberName);
+                return new PSMemberSet(Name);
             }
 
-            Collection<PSMemberInfo> value1Collection =
-                (Collection<PSMemberInfo>)GetParameterType(_value1, typeof(Collection<PSMemberInfo>));
-            return new PSMemberSet(_memberName, value1Collection);
+            var value1Collection = (Collection<PSMemberInfo>)GetParameterType(Value, typeof(Collection<PSMemberInfo>));
+            return new PSMemberSet(Name, value1Collection);
         }
 
         private PSMemberInfo GetNoteProperty()
         {
             EnsureValue1HasBeenSpecified();
             EnsureValue2HasNotBeenSpecified();
-            return new PSNoteProperty(_memberName, _value1);
+
+            return new PSNoteProperty(Name, Value);
         }
 
         private PSMemberInfo GetPropertySet()
@@ -311,9 +237,9 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue2HasNotBeenSpecified();
             EnsureValue1HasBeenSpecified();
             EnsureValue1IsNotNull();
-            Collection<string> value1Collection =
-                (Collection<string>)GetParameterType(_value1, typeof(Collection<string>));
-            return new PSPropertySet(_memberName, value1Collection);
+
+            var value1Collection = (Collection<string>)GetParameterType(Value, typeof(Collection<string>));
+            return new PSPropertySet(Name, value1Collection);
         }
 
         private PSMemberInfo GetScriptMethod()
@@ -321,8 +247,9 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue2HasNotBeenSpecified();
             EnsureValue1HasBeenSpecified();
             EnsureValue1IsNotNull();
-            ScriptBlock value1ScriptBlock = (ScriptBlock)GetParameterType(_value1, typeof(ScriptBlock));
-            return new PSScriptMethod(_memberName, value1ScriptBlock);
+
+            var value1ScriptBlock = (ScriptBlock)GetParameterType(Value, typeof(ScriptBlock));
+            return new PSScriptMethod(Name, value1ScriptBlock);
         }
 
         private PSMemberInfo GetScriptProperty()
@@ -330,19 +257,15 @@ namespace Microsoft.PowerShell.Commands
             EnsureValue1HasBeenSpecified();
             EnsureValue1AndValue2AreNotBothNull();
 
-            ScriptBlock value1ScriptBlock = null;
-            if (HasBeenSpecified(_value1))
-            {
-                value1ScriptBlock = (ScriptBlock)GetParameterType(_value1, typeof(ScriptBlock));
-            }
+            ScriptBlock value1ScriptBlock = HasBeenSpecified(Value)
+                ? (ScriptBlock)GetParameterType(Value, typeof(ScriptBlock))
+                : null;
 
-            ScriptBlock value2ScriptBlock = null;
-            if (HasBeenSpecified(_value2))
-            {
-                value2ScriptBlock = (ScriptBlock)GetParameterType(_value2, typeof(ScriptBlock));
-            }
+            ScriptBlock value2ScriptBlock = HasBeenSpecified(SecondValue)
+                ? (ScriptBlock)GetParameterType(SecondValue, typeof(ScriptBlock))
+                : null;
 
-            return new PSScriptProperty(_memberName, value1ScriptBlock, value2ScriptBlock);
+            return new PSScriptProperty(Name, value1ScriptBlock, value2ScriptBlock);
         }
 
         /// <summary>
@@ -350,103 +273,91 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
-            if (_typeName != null && string.IsNullOrWhiteSpace(_typeName))
+            if (TypeName != null && string.IsNullOrWhiteSpace(TypeName))
             {
-                ThrowTerminatingError(NewError("TypeNameShouldNotBeEmpty", "TypeNameShouldNotBeEmpty", _typeName));
+                ThrowTerminatingError(NewError("TypeNameShouldNotBeEmpty", "TypeNameShouldNotBeEmpty", TypeName));
             }
 
-            if (ParameterSetName == "TypeNameSet")
+            PSMemberInfo member;
+            switch (ParameterSetName)
             {
-                UpdateTypeNames();
+                case TypeNameSet:
+                    UpdateTypeNames();
 
-                if (_passThru)
-                {
-                    WriteObject(_inputObject);
-                }
-
-                return;
-            }
-
-            if (ParameterSetName == NotePropertyMultiMemberSet)
-            {
-                ProcessNotePropertyMultiMemberSet();
-                return;
-            }
-
-            PSMemberInfo member = null;
-            if (ParameterSetName == NotePropertySingleMemberSet)
-            {
-                member = new PSNoteProperty(_notePropertyName, _notePropertyValue);
-            }
-            else
-            {
-                int memberCountHelper = (int)_memberType;
-                int memberCount = 0;
-                while (memberCountHelper != 0)
-                {
-                    if ((memberCountHelper & 1) != 0)
+                    if (PassThru)
                     {
-                        memberCount++;
+                        WriteObject(InputObject);
                     }
 
-                    memberCountHelper = memberCountHelper >> 1;
-                }
-
-                if (memberCount != 1)
-                {
-                    ThrowTerminatingError(NewError("WrongMemberCount", "WrongMemberCount", null, _memberType.ToString()));
                     return;
-                }
+                case NotePropertyMultiMemberSet:
+                    ProcessNotePropertyMultiMemberSet();
+                    return;
+                case NotePropertySingleMemberSet:
+                    member = new PSNoteProperty(NotePropertyName, NotePropertyValue);
+                    break;
+                default:
+                    int memberCountHelper = (int)MemberType;
+                    int memberCount = 0;
+                    while (memberCountHelper != 0)
+                    {
+                        if ((memberCountHelper & 1) != 0)
+                        {
+                            memberCount++;
+                        }
 
-                switch (_memberType)
-                {
-                    case PSMemberTypes.AliasProperty:
-                        member = GetAliasProperty();
-                        break;
-                    case PSMemberTypes.CodeMethod:
-                        member = GetCodeMethod();
-                        break;
-                    case PSMemberTypes.CodeProperty:
-                        member = GetCodeProperty();
-                        break;
-                    case PSMemberTypes.MemberSet:
-                        member = GetMemberSet();
-                        break;
-                    case PSMemberTypes.NoteProperty:
-                        member = GetNoteProperty();
-                        break;
-                    case PSMemberTypes.PropertySet:
-                        member = GetPropertySet();
-                        break;
-                    case PSMemberTypes.ScriptMethod:
-                        member = GetScriptMethod();
-                        break;
-                    case PSMemberTypes.ScriptProperty:
-                        member = GetScriptProperty();
-                        break;
-                    default:
-                        ThrowTerminatingError(NewError("CannotAddMemberType", "CannotAddMemberType", null, _memberType.ToString()));
-                        break;
-                }
+                        memberCountHelper >>= 1;
+                    }
+
+                    if (memberCount != 1)
+                    {
+                        ThrowTerminatingError(
+                            NewError("WrongMemberCount", "WrongMemberCount", null, MemberType.ToString()));
+                        return;
+                    }
+
+                    member = GetMember(MemberType);
+                    break;
             }
 
-            if (member == null)
+            if (member == null || !TryAddMemberToTarget(member))
             {
                 return;
             }
 
-            if (!AddMemberToTarget(member))
-                return;
-
-            if (_typeName != null)
+            if (TypeName != null)
             {
                 UpdateTypeNames();
             }
 
-            if (_passThru)
+            if (PassThru)
             {
-                WriteObject(_inputObject);
+                WriteObject(InputObject);
             }
+        }
+
+        private PSMemberInfo GetMember(PSMemberTypes memberType)
+        {
+            PSMemberInfo result = memberType switch
+            {
+                PSMemberTypes.AliasProperty => GetAliasProperty(),
+                PSMemberTypes.CodeMethod => GetCodeMethod(),
+                PSMemberTypes.CodeProperty => GetCodeProperty(),
+                PSMemberTypes.MemberSet => GetMemberSet(),
+                PSMemberTypes.NoteProperty => GetNoteProperty(),
+                PSMemberTypes.PropertySet => GetPropertySet(),
+                PSMemberTypes.ScriptMethod => GetScriptMethod(),
+                PSMemberTypes.ScriptProperty => GetScriptProperty(),
+                _ => null
+            };
+
+            if (result == null)
+            {
+                ThrowTerminatingError(
+                    NewError("CannotAddMemberType", "CannotAddMemberType", null, MemberType.ToString()));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -454,35 +365,40 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         /// <param name="member"></param>
         /// <returns></returns>
-        private bool AddMemberToTarget(PSMemberInfo member)
+        private bool TryAddMemberToTarget(PSMemberInfo member)
         {
-            PSMemberInfo previousMember = _inputObject.Members[member.Name];
+            PSMemberInfo previousMember = InputObject.Members[member.Name];
             if (previousMember != null)
             {
-                if (!_force)
+                if (!Force)
                 {
-                    WriteError(NewError("MemberAlreadyExists",
+                    WriteError(NewError(
                         "MemberAlreadyExists",
-                        _inputObject, member.Name));
+                        "MemberAlreadyExists",
+                        InputObject,
+                        member.Name));
                     return false;
                 }
                 else
                 {
                     if (previousMember.IsInstance)
                     {
-                        _inputObject.Members.Remove(member.Name);
+                        InputObject.Members.Remove(member.Name);
                     }
                     else
                     {
-                        WriteError(NewError("CannotRemoveTypeDataMember",
+                        WriteError(NewError(
                             "CannotRemoveTypeDataMember",
-                            _inputObject, member.Name, previousMember.MemberType));
+                            "CannotRemoveTypeDataMember",
+                            InputObject,
+                            member.Name,
+                            previousMember.MemberType));
                         return false;
                     }
                 }
             }
 
-            _inputObject.Members.Add(member);
+            InputObject.Members.Add(member);
             return true;
         }
 
@@ -492,48 +408,57 @@ namespace Microsoft.PowerShell.Commands
         private void ProcessNotePropertyMultiMemberSet()
         {
             bool result = false;
-            foreach (DictionaryEntry prop in _property)
+            foreach (DictionaryEntry prop in NotePropertyMembers)
             {
                 string noteName = PSObject.ToStringParser(this.Context, prop.Key);
                 object noteValue = prop.Value;
 
                 if (string.IsNullOrEmpty(noteName))
                 {
-                    WriteError(NewError("NotePropertyNameShouldNotBeNull",
-                        "NotePropertyNameShouldNotBeNull", noteName));
+                    WriteError(NewError(
+                        "NotePropertyNameShouldNotBeNull",
+                        "NotePropertyNameShouldNotBeNull",
+                        noteName));
                     continue;
                 }
 
                 PSMemberInfo member = new PSNoteProperty(noteName, noteValue);
-                if (AddMemberToTarget(member) && !result)
+                if (TryAddMemberToTarget(member) && !result)
+                {
                     result = true;
+                }
             }
 
-            if (result && _typeName != null)
+            if (result && TypeName != null)
             {
                 UpdateTypeNames();
             }
 
-            if (result && _passThru)
+            if (result && PassThru)
             {
-                WriteObject(_inputObject);
+                WriteObject(InputObject);
             }
         }
 
         private void UpdateTypeNames()
         {
             // Respect the type shortcut
-            Type type;
-            string typeNameInUse = _typeName;
-            if (LanguagePrimitives.TryConvertTo(_typeName, out type)) { typeNameInUse = type.FullName; }
+            string typeNameInUse = TypeName;
+            if (LanguagePrimitives.TryConvertTo(TypeName, out Type type))
+            {
+                typeNameInUse = type.FullName;
+            }
 
-            _inputObject.TypeNames.Insert(0, typeNameInUse);
+            InputObject.TypeNames.Insert(0, typeNameInUse);
         }
 
         private ErrorRecord NewError(string errorId, string resourceId, object targetObject, params object[] args)
         {
-            ErrorDetails details = new ErrorDetails(this.GetType().GetTypeInfo().Assembly,
-                "Microsoft.PowerShell.Commands.Utility.resources.AddMember", resourceId, args);
+            ErrorDetails details = new ErrorDetails(
+                this.GetType().GetTypeInfo().Assembly,
+                "Microsoft.PowerShell.Commands.Utility.resources.AddMember",
+                resourceId,
+                args);
             ErrorRecord errorRecord = new ErrorRecord(
                 new InvalidOperationException(details.Message),
                 errorId,
@@ -558,9 +483,8 @@ namespace Microsoft.PowerShell.Commands
         {
             protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
             {
-                string notePropertyName = arguments as string;
-                PSMemberTypes memberType;
-                if (notePropertyName != null && LanguagePrimitives.TryConvertTo<PSMemberTypes>(notePropertyName, out memberType))
+                if (arguments is string notePropertyName
+                    && LanguagePrimitives.TryConvertTo<PSMemberTypes>(notePropertyName, out PSMemberTypes memberType))
                 {
                     switch (memberType)
                     {
@@ -572,8 +496,10 @@ namespace Microsoft.PowerShell.Commands
                         case PSMemberTypes.PropertySet:
                         case PSMemberTypes.ScriptMethod:
                         case PSMemberTypes.ScriptProperty:
-                            string errMsg = StringUtil.Format(AddMember.InvalidValueForNotePropertyName, typeof(PSMemberTypes).FullName);
-                            throw new ValidationMetadataException(errMsg, true);
+                            throw new ValidationMetadataException(
+                                message: StringUtil.Format(
+                                    AddMember.InvalidValueForNotePropertyName, typeof(PSMemberTypes).FullName),
+                                swallowException: true);
                         default:
                             break;
                     }
@@ -591,8 +517,7 @@ namespace Microsoft.PowerShell.Commands
                 object target = PSObject.Base(inputData);
                 if (target != null && target.GetType().IsNumeric())
                 {
-                    var result = LanguagePrimitives.ConvertTo<string>(target);
-                    return result;
+                    return LanguagePrimitives.ConvertTo<string>(target);
                 }
 
                 return inputData;
