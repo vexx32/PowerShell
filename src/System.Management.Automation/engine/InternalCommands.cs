@@ -1360,35 +1360,65 @@ namespace Microsoft.PowerShell.Commands
         /// The value to compare against.
         /// </summary>
         [Parameter(Position = 1, ParameterSetName = "EqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "EqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "NotEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "NotEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "GreaterThanSet")]
+        [Parameter(Position = 1, ParameterSetName = "GreaterThanNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveGreaterThanSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveGreaterThanNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "LessThanSet")]
+        [Parameter(Position = 1, ParameterSetName = "LessThanNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLessThanSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLessThanNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "GreaterOrEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "GreaterOrEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveGreaterOrEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveGreaterOrEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "LessOrEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "LessOrEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLessOrEqualSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLessOrEqualNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "LikeSet")]
+        [Parameter(Position = 1, ParameterSetName = "LikeNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLikeSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveLikeNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "NotLikeSet")]
+        [Parameter(Position = 1, ParameterSetName = "NotLikeNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotLikeSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotLikeNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "MatchSet")]
+        [Parameter(Position = 1, ParameterSetName = "MatchNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveMatchSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveMatchNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "NotMatchSet")]
+        [Parameter(Position = 1, ParameterSetName = "NotMatchNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotMatchSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotMatchNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "ContainsSet")]
+        [Parameter(Position = 1, ParameterSetName = "ContainsNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveContainsSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveContainsNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "NotContainsSet")]
+        [Parameter(Position = 1, ParameterSetName = "NotContainsNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotContainsSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotContainsNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "InSet")]
+        [Parameter(Position = 1, ParameterSetName = "InNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveInSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveInNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "NotInSet")]
+        [Parameter(Position = 1, ParameterSetName = "NotInNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotInSet")]
+        [Parameter(Position = 1, ParameterSetName = "CaseSensitiveNotInNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "IsSet")]
+        [Parameter(Position = 1, ParameterSetName = "IsNoPropertySet")]
         [Parameter(Position = 1, ParameterSetName = "IsNotSet")]
+        [Parameter(Position = 1, ParameterSetName = "IsNotNoPropertySet")]
         public object Value
         {
             get
@@ -1416,6 +1446,7 @@ namespace Microsoft.PowerShell.Commands
         /// It's the default parameter set, so -EQ is not mandatory.
         /// </summary>
         [Parameter(ParameterSetName = "EqualSet")]
+        [Parameter(Mandatory, ParameterSetName = "EqualNoPropertySet")]
         [Alias("IEQ")]
         public SwitchParameter EQ
         {
@@ -1435,6 +1466,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -ceq.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveEqualNoPropertySet")]
         public SwitchParameter CEQ
         {
             get
@@ -1452,6 +1484,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -NotEqual.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "NotEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "NotEqualNoPropertySet")]
         [Alias("INE")]
         public SwitchParameter NE
         {
@@ -1470,6 +1503,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cne.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotEqualNoPropertySet")]
         public SwitchParameter CNE
         {
             get
@@ -1487,6 +1521,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -GreaterThan.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "GreaterThanSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "GreaterThanNoPropertySet")]
         [Alias("IGT")]
         public SwitchParameter GT
         {
@@ -1505,6 +1540,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cgt.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveGreaterThanSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveGreaterThanNoPropertySet")]
         public SwitchParameter CGT
         {
             get
@@ -1522,6 +1558,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -LessThan.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "LessThanSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "LessThanNoPropertySet")]
         [Alias("ILT")]
         public SwitchParameter LT
         {
@@ -1540,6 +1577,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets -sets case sensitive binary operator -clt.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLessThanSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLessThanNoPropertySet")]
         public SwitchParameter CLT
         {
             get
@@ -1557,6 +1595,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -GreaterOrEqual.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "GreaterOrEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "GreaterOrEqualNoPropertySet")]
         [Alias("IGE")]
         public SwitchParameter GE
         {
@@ -1575,6 +1614,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cge.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveGreaterOrEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveGreaterOrEqualNoPropertySet")]
         public SwitchParameter CGE
         {
             get
@@ -1592,6 +1632,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -LessOrEqual.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "LessOrEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "LessOrEqualNoPropertySet")]
         [Alias("ILE")]
         public SwitchParameter LE
         {
@@ -1610,6 +1651,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cle.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLessOrEqualSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLessOrEqualNoPropertySet")]
         public SwitchParameter CLE
         {
             get
@@ -1627,6 +1669,7 @@ namespace Microsoft.PowerShell.Commands
         ///Gets or sets binary operator -Like.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "LikeSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "LikeNoPropertySet")]
         [Alias("ILike")]
         public SwitchParameter Like
         {
@@ -1645,6 +1688,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -clike.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLikeSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveLikeNoPropertySet")]
         public SwitchParameter CLike
         {
             get
@@ -1662,6 +1706,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -NotLike.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "NotLikeSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "NotLikeNoPropertySet")]
         [Alias("INotLike")]
         public SwitchParameter NotLike
         {
@@ -1680,6 +1725,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cnotlike.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotLikeSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotLikeNoPropertySet")]
         public SwitchParameter CNotLike
         {
             get
@@ -1697,6 +1743,7 @@ namespace Microsoft.PowerShell.Commands
         /// Get or sets binary operator -Match.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "MatchSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "MatchNoPropertySet")]
         [Alias("IMatch")]
         public SwitchParameter Match
         {
@@ -1715,6 +1762,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cmatch.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveMatchSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveMatchNoPropertySet")]
         public SwitchParameter CMatch
         {
             get
@@ -1732,6 +1780,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -NotMatch.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "NotMatchSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "NotMatchNoPropertySet")]
         [Alias("INotMatch")]
         public SwitchParameter NotMatch
         {
@@ -1750,6 +1799,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cnotmatch.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotMatchSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotMatchNoPropertySet")]
         public SwitchParameter CNotMatch
         {
             get
@@ -1767,6 +1817,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -Contains.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "ContainsSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "ContainsNoPropertySet")]
         [Alias("IContains")]
         public SwitchParameter Contains
         {
@@ -1785,6 +1836,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -ccontains.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveContainsSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveContainsNoPropertySet")]
         public SwitchParameter CContains
         {
             get
@@ -1802,6 +1854,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -NotContains.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "NotContainsSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "NotContainsNoPropertySet")]
         [Alias("INotContains")]
         public SwitchParameter NotContains
         {
@@ -1820,6 +1873,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cnotcontains.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotContainsSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotContainsNoPropertySet")]
         public SwitchParameter CNotContains
         {
             get
@@ -1837,6 +1891,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -In.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "InSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "InNoPropertySet")]
         [Alias("IIn")]
         public SwitchParameter In
         {
@@ -1855,6 +1910,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cin.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveInSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveInNoPropertySet")]
         public SwitchParameter CIn
         {
             get
@@ -1872,6 +1928,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -NotIn.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "NotInSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "NotInNoPropertySet")]
         [Alias("INotIn")]
         public SwitchParameter NotIn
         {
@@ -1890,6 +1947,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets case sensitive binary operator -cnotin.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotInSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "CaseSensitiveNotInNoPropertySet")]
         public SwitchParameter CNotIn
         {
             get
@@ -1907,6 +1965,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -Is.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "IsSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "IsNoPropertySet")]
         public SwitchParameter Is
         {
             get
@@ -1924,6 +1983,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -IsNot.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "IsNotSet")]
+        [Parameter(Mandatory = true, ParameterSetName = "IsNotNoPropertySet")]
         public SwitchParameter IsNot
         {
             get
@@ -1941,6 +2001,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets binary operator -Not.
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "Not")]
+        [Parameter(Mandatory = true, ParameterSetName = "NoPropertyNot")]
         public SwitchParameter Not
         {
             get
@@ -2239,11 +2300,10 @@ namespace Microsoft.PowerShell.Commands
             }
             else
             {
-                // Both -Property and -Value need to be specified if the user specifies the binary operation
+                // The binary operation is specified explicitly by the user and the -Value parameter is
+                // not specified
                 if (_valueNotSpecified && ((_binaryOperator != TokenKind.Ieq && _binaryOperator != TokenKind.Not) || !_forceBooleanEvaluation))
                 {
-                    // The binary operation is specified explicitly by the user and the -Value parameter is
-                    // not specified
                     ThrowTerminatingError(
                         ForEachObjectCommand.GenerateNameParameterError(
                             "Value",
@@ -2252,10 +2312,9 @@ namespace Microsoft.PowerShell.Commands
                             target: null));
                 }
 
-                // The binary operation needs to be specified if the user specifies both the -Property and -Value
+                // -Property and -Value are specified explicitly by the user but the binary operation is not
                 if (!_valueNotSpecified && (_binaryOperator == TokenKind.Ieq && _forceBooleanEvaluation))
                 {
-                    // The -Property and -Value are specified explicitly by the user but the binary operation is not
                     ThrowTerminatingError(
                         ForEachObjectCommand.GenerateNameParameterError(
                             "Operator",
@@ -2265,7 +2324,9 @@ namespace Microsoft.PowerShell.Commands
                 }
 
                 bool strictModeWithError = false;
-                object lvalue = GetValue(ref strictModeWithError);
+                object lvalue = ParameterSetName.Contains("NoProperty", StringComparison.Ordinal)
+                    ? InputObject
+                    : GetValue(ref strictModeWithError);
                 if (strictModeWithError)
                 {
                     return;
