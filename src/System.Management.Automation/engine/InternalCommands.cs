@@ -2014,9 +2014,13 @@ namespace Microsoft.PowerShell.Commands
             return WildcardPattern.Get(val, wildcardOptions);
         }
 
+        private bool _compareInputObject;
+
         /// <summary/>
         protected override void BeginProcessing()
         {
+            _compareInputObject = Property.Equals("_", StringComparison.Ordinal);
+
             if (_script != null)
             {
                 return;
@@ -2265,7 +2269,7 @@ namespace Microsoft.PowerShell.Commands
                 }
 
                 bool strictModeWithError = false;
-                object lvalue = GetValue(ref strictModeWithError);
+                object lvalue = _compareInputObject ? InputObject : GetValue(ref strictModeWithError);
                 if (strictModeWithError)
                 {
                     return;
