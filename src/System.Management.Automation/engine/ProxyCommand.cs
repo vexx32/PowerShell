@@ -247,6 +247,30 @@ namespace System.Management.Automation
             return commandMetadata.GetEndBlock();
         }
 
+        /// <summary>
+        /// This method constructs a string representing the dispose block of the command
+        /// specified by <paramref name="commandMetadata"/>. The returned string only contains the
+        /// script, it is not enclosed in "dispose { }".
+        /// </summary>
+        /// <param name="commandMetadata">
+        /// An instance of CommandMetadata representing a command.
+        /// </param>
+        /// <returns>
+        /// A string representing the end block of the command.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="commandMetadata"/> is null.
+        /// </exception>
+        public static string GetDispose(CommandMetadata commandMetadata)
+        {
+            if (commandMetadata == null)
+            {
+                throw PSTraceSource.NewArgumentNullException(nameof(commandMetadata));
+            }
+
+            return commandMetadata.GetDisposeBlock();
+        }
+
         private static T GetProperty<T>(PSObject obj, string property) where T : class
         {
             T result = null;

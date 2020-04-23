@@ -868,8 +868,11 @@ process
 
 end
 {{{5}}}
+
+dispose
+{{{6}}}
 <#
-{6}
+{7}
 #>
 ",
                 GetDecl(),
@@ -878,6 +881,7 @@ end
                 GetBeginBlock(),
                 GetProcessBlock(),
                 GetEndBlock(),
+                GetDisposeBlock(),
                 CodeGeneration.EscapeBlockCommentContent(helpComment));
 
             return result;
@@ -1100,6 +1104,17 @@ end
             return @"
     try {
         $steppablePipeline.End()
+    } catch {
+        throw
+    }
+";
+        }
+
+        internal string GetDisposeBlock()
+        {
+            return @"
+    try {
+        $steppablePipeline.Dispose()
     } catch {
         throw
     }

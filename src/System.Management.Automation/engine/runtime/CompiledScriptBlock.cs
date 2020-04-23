@@ -35,6 +35,7 @@ namespace System.Management.Automation
         Begin,
         Process,
         End,
+        Dispose,
         ProcessBlockOnly,
     }
 
@@ -248,6 +249,7 @@ namespace System.Management.Automation
 
                 if (scriptBlockAst.BeginBlock != null
                     || scriptBlockAst.ProcessBlock != null
+                    || scriptBlockAst.DisposeBlock != null
                     || scriptBlockAst.ParamBlock != null
                     || scriptBlockAst.DynamicParamBlock != null
                     || scriptBlockAst.ScriptRequirements != null
@@ -322,6 +324,8 @@ namespace System.Management.Automation
         internal Action<FunctionContext> UnoptimizedProcessBlock { get; set; }
         internal Action<FunctionContext> EndBlock { get; set; }
         internal Action<FunctionContext> UnoptimizedEndBlock { get; set; }
+        internal Action<FunctionContext> DisposeBlock { get; set; }
+        internal Action<FunctionContext> UnoptimizedDisposeBlock { get; set; }
 
         internal IScriptExtent[] SequencePoints { get; set; }
         private RuntimeDefinedParameterDictionary _runtimeDefinedParameterDictionary;
@@ -719,7 +723,6 @@ namespace System.Management.Automation
                 args);
         }
 
-
         internal SteppablePipeline GetSteppablePipelineImpl(CommandOrigin commandOrigin, object[] args)
         {
             var pipelineAst = GetSimplePipeline(
@@ -738,7 +741,7 @@ namespace System.Management.Automation
         {
             errorHandler = errorHandler ?? (_ => null);
 
-            if (HasBeginBlock || HasProcessBlock)
+            if (HasBeginBlock || HasProcessBlock || HasDisposeBlock)
             {
                 return errorHandler(AutomationExceptions.CanConvertOneClauseOnly);
             }
@@ -877,7 +880,10 @@ namespace System.Management.Automation
             Parser parser = new Parser();
 
             var ast = AstInternal;
-            if (HasBeginBlock || HasProcessBlock || ast.Body.ParamBlock != null)
+            if (HasBeginBlock
+                || HasProcessBlock
+                || HasDisposeBlock
+                || ast.Body.ParamBlock != null)
             {
                 Ast errorAst = ast.Body.BeginBlock ?? (Ast)ast.Body.ProcessBlock ?? ast.Body.ParamBlock;
                 parser.ReportError(
@@ -962,7 +968,8 @@ namespace System.Management.Automation
         {
             if ((clauseToInvoke == ScriptBlockClauseToInvoke.Begin && !HasBeginBlock)
                 || (clauseToInvoke == ScriptBlockClauseToInvoke.Process && !HasProcessBlock)
-                || (clauseToInvoke == ScriptBlockClauseToInvoke.End && !HasEndBlock))
+                || (clauseToInvoke == ScriptBlockClauseToInvoke.End && !HasEndBlock)
+                || (clauseToInvoke == ScriptBlockClauseToInvoke.Dispose && !HasDisposeBlock))
             {
                 return;
             }
@@ -1348,7 +1355,7 @@ namespace System.Management.Automation
         private Action<FunctionContext> GetCodeToInvoke(ref bool optimized, ScriptBlockClauseToInvoke clauseToInvoke)
         {
             if (clauseToInvoke == ScriptBlockClauseToInvoke.ProcessBlockOnly
-                && (HasBeginBlock || (HasEndBlock && HasProcessBlock)))
+                && (HasBeginBlock || HasDisposeBlock || (HasEndBlock && HasProcessBlock)))
             {
                 throw PSTraceSource.NewInvalidOperationException(AutomationExceptions.ScriptBlockInvokeOnOneClauseOnly);
             }
@@ -1365,6 +1372,8 @@ namespace System.Management.Automation
                         return _scriptBlockData.ProcessBlock;
                     case ScriptBlockClauseToInvoke.End:
                         return _scriptBlockData.EndBlock;
+                    case ScriptBlockClauseToInvoke.Dispose:
+                        return _scriptBlockData.DisposeBlock;
                     default:
                         return HasProcessBlock ? _scriptBlockData.ProcessBlock : _scriptBlockData.EndBlock;
                 }
@@ -1378,6 +1387,8 @@ namespace System.Management.Automation
                     return _scriptBlockData.UnoptimizedProcessBlock;
                 case ScriptBlockClauseToInvoke.End:
                     return _scriptBlockData.UnoptimizedEndBlock;
+                case ScriptBlockClauseToInvoke.Dispose:
+                    return _scriptBlockData.UnoptimizedDisposeBlock;
                 default:
                     return HasProcessBlock ? _scriptBlockData.UnoptimizedProcessBlock : _scriptBlockData.UnoptimizedEndBlock;
             }
@@ -2132,11 +2143,17 @@ namespace System.Management.Automation
 
         internal Action<FunctionContext> UnoptimizedEndBlock { get => _scriptBlockData.UnoptimizedEndBlock; }
 
+        internal Action<FunctionContext> DisposeBlock { get => _scriptBlockData.DisposeBlock; }
+
+        internal Action<FunctionContext> UnoptimizedDisposeBlock { get => _scriptBlockData.UnoptimizedDisposeBlock; }
+
         internal bool HasBeginBlock { get => AstInternal.Body.BeginBlock != null; }
 
         internal bool HasProcessBlock { get => AstInternal.Body.ProcessBlock != null; }
 
         internal bool HasEndBlock { get => AstInternal.Body.EndBlock != null; }
+
+        internal bool HasDisposeBlock { get => AstInternal.Body.DisposeBlock != null; }
     }
 
     [Serializable]
@@ -2499,16 +2516,35 @@ namespace System.Management.Automation
                 return;
             }
 
-            this.DisposingEvent.SafeInvoke(this, EventArgs.Empty);
-            commandRuntime = null;
-            currentObjectInPipeline = null;
-            _input.Clear();
-            // _scriptBlock = null;
-            // _localsTuple = null;
-            // _functionContext = null;
+            var oldOutputPipe = _functionContext._outputPipe;
 
-            base.InternalDispose(true);
-            _disposed = true;
+            try
+            {
+                if (_scriptBlock.HasDisposeBlock)
+                {
+                    _functionContext._outputPipe = new Pipe
+                    {
+                        NullPipe = true
+                    };
+
+                    RunClause(
+                        _runOptimized ? _scriptBlock.DisposeBlock : _scriptBlock.UnoptimizedDisposeBlock,
+                        AutomationNull.Value,
+                        AutomationNull.Value);
+                }
+            }
+            finally
+            {
+                _functionContext._outputPipe = oldOutputPipe;
+                this.DisposingEvent.SafeInvoke(this, EventArgs.Empty);
+
+                commandRuntime = null;
+                currentObjectInPipeline = null;
+                _input.Clear();
+
+                base.InternalDispose(true);
+                _disposed = true;
+            }
         }
 
         #endregion IDispose
