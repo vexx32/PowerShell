@@ -393,46 +393,39 @@ namespace System.Management.Automation
 
         internal override void Complete()
         {
-            try
+            if (_exitWasCalled)
             {
-                if (_exitWasCalled)
-                {
-                    return;
-                }
-
-                // process any items that may still be in the input pipeline
-                if (_scriptBlock.HasProcessBlock && IsPipelineInputExpected())
-                {
-                    DoProcessRecordWithInput();
-                }
-
-                if (_scriptBlock.HasEndBlock)
-                {
-                    var endBlock = _runOptimizedCode ? _scriptBlock.EndBlock : _scriptBlock.UnoptimizedEndBlock;
-                    if (this.CommandRuntime.InputPipe.ExternalReader == null)
-                    {
-                        if (IsPipelineInputExpected())
-                        {
-                            // read any items that may still be in the input pipe
-                            while (Read())
-                            {
-                                _input.Add(Command.CurrentPipelineObject);
-                            }
-                        }
-
-                        // run with accumulated input
-                        RunClause(endBlock, AutomationNull.Value, _input);
-                    }
-                    else
-                    {
-                        // run with asynchronously updated $input enumerator
-                        RunClause(endBlock, AutomationNull.Value, this.CommandRuntime.InputPipe.ExternalReader.GetReadEnumerator());
-                    }
-                }
+                return;
             }
-            finally
+
+            // process any items that may still be in the input pipeline
+            if (_scriptBlock.HasProcessBlock && IsPipelineInputExpected())
             {
-                ScriptBlock.LogScriptBlockEnd(_scriptBlock, Context.CurrentRunspace.InstanceId);
+                DoProcessRecordWithInput();
+            }
+
+            if (_scriptBlock.HasEndBlock)
+            {
+                var endBlock = _runOptimizedCode ? _scriptBlock.EndBlock : _scriptBlock.UnoptimizedEndBlock;
+                if (this.CommandRuntime.InputPipe.ExternalReader == null)
+                {
+                    if (IsPipelineInputExpected())
+                    {
+                        // read any items that may still be in the input pipe
+                        while (Read())
+                        {
+                            _input.Add(Command.CurrentPipelineObject);
+                        }
+                    }
+
+                    // run with accumulated input
+                    RunClause(endBlock, AutomationNull.Value, _input);
+                }
+                else
+                {
+                    // run with asynchronously updated $input enumerator
+                    RunClause(endBlock, AutomationNull.Value, this.CommandRuntime.InputPipe.ExternalReader.GetReadEnumerator());
+                }
             }
         }
 
@@ -630,6 +623,31 @@ namespace System.Management.Automation
             if (!UseLocalScope)
             {
                 CommandSessionState.CurrentScope.DottedScopes.Pop();
+            }
+        }
+
+        internal void InvokeDisposeBlock()
+        {
+            var oldOutputPipe = _functionContext._outputPipe;
+            try
+            {
+                if (_scriptBlock.HasDisposeBlock)
+                {
+                    var disposeBlock = _runOptimizedCode ? _scriptBlock.DisposeBlock : _scriptBlock.UnoptimizedDisposeBlock;
+
+                    _functionContext._outputPipe = new Pipe
+                    {
+                        NullPipe = true
+                    };
+
+                    // run with no pipeline input or $input enumerator
+                    RunClause(disposeBlock, AutomationNull.Value, AutomationNull.Value);
+                }
+            }
+            finally
+            {
+                _functionContext._outputPipe = oldOutputPipe;
+                ScriptBlock.LogScriptBlockEnd(_scriptBlock, Context.CurrentRunspace.InstanceId);
             }
         }
     }

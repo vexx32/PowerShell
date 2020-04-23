@@ -157,6 +157,15 @@ namespace Microsoft.PowerShell.Commands
             }
         }
 
+        private bool _disposed;
+
+        /// <summary>
+        /// Gets or sets the script block to execute on command disposal.
+        /// </summary>
+        [Parameter(ParameterSetName = "ScriptBlockSet")]
+        [Alias("Dispose")]
+        public ScriptBlock DisposeScript { get; set; }
+
         /// <summary>
         /// Gets or sets the remaining script blocks to apply.
         /// </summary>
@@ -355,15 +364,42 @@ namespace Microsoft.PowerShell.Commands
         #region IDisposable
 
         /// <summary>
-        /// Dispose cmdlet instance.
+        /// IDisposable implementation for ForEach-Object.
+        /// No-op if <see cref="DisposeScript"/> or <see cref="Parallel"/> is not specified.
         /// </summary>
         public void Dispose()
         {
-            // Ensure all parallel task objects are disposed
-            _taskTimer?.Dispose();
-            _taskDataStreamWriter?.Dispose();
-            _taskPool?.Dispose();
-            _taskCollection?.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+
+            try
+            {
+                switch (ParameterSetName)
+                {
+                    case ForEachObjectCommand.ScriptBlockSet:
+                        DisposeScript?.InvokeUsingCmdlet(
+                            contextCmdlet: this,
+                            useLocalScope: false,
+                            errorHandlingBehavior: ScriptBlock.ErrorHandlingBehavior.WriteToCurrentErrorPipe,
+                            dollarUnder: InputObject,
+                            input: new object[] { InputObject },
+                            scriptThis: AutomationNull.Value,
+                            args: Array.Empty<object>());
+                        break;
+                    case ForEachObjectCommand.ParallelParameterSet:
+                        _taskTimer?.Dispose();
+                        _taskDataStreamWriter?.Dispose();
+                        _taskPool?.Dispose();
+                        _taskCollection?.Dispose();
+                        break;
+                }
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
 
         #endregion
