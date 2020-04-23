@@ -585,6 +585,9 @@ namespace System.Management.Automation.Language
         /// <summary>The 'base' keyword</summary>
         Base = 168,
 
+        /// <summary>The 'dispose' keyword.</summary>
+        Dispose = 169,
+
         #endregion Keywords
     }
 
@@ -944,6 +947,7 @@ namespace System.Management.Automation.Language
             /*              Command */ TokenFlags.Keyword,
             /*               Hidden */ TokenFlags.Keyword,
             /*                 Base */ TokenFlags.Keyword,
+            /*              Dispose */ TokenFlags.Keyword | TokenFlags.ScriptBlockBlockName,
 
             #endregion Flags for keywords
         };
@@ -1142,6 +1146,7 @@ namespace System.Management.Automation.Language
             /*              Command */ "command",
             /*               Hidden */ "hidden",
             /*                 Base */ "base",
+            /*              Dispose */ "dispose",
 
             #endregion Text for keywords
         };
@@ -1149,21 +1154,28 @@ namespace System.Management.Automation.Language
 #if DEBUG
         static TokenTraits()
         {
-            Diagnostics.Assert(s_staticTokenFlags.Length == ((int)TokenKind.Base + 1),
-                               "Table size out of sync with enum - _staticTokenFlags");
-            Diagnostics.Assert(s_tokenText.Length == ((int)TokenKind.Base + 1),
-                               "Table size out of sync with enum - _tokenText");
+            Diagnostics.Assert(
+                s_staticTokenFlags.Length == ((int)TokenKind.Dispose + 1),
+                "Table size out of sync with enum - _staticTokenFlags");
+            Diagnostics.Assert(
+                s_tokenText.Length == ((int)TokenKind.Dispose + 1),
+                "Table size out of sync with enum - _tokenText");
             // Some random assertions to make sure the enum and the traits are in sync
-            Diagnostics.Assert(GetTraits(TokenKind.Begin) == (TokenFlags.Keyword | TokenFlags.ScriptBlockBlockName),
-                               "Table out of sync with enum - flags Begin");
-            Diagnostics.Assert(GetTraits(TokenKind.Workflow) == (TokenFlags.Keyword | TokenFlags.StatementDoesntSupportAttributes),
-                               "Table out of sync with enum - flags Workflow");
-            Diagnostics.Assert(GetTraits(TokenKind.Sequence) == (TokenFlags.Keyword | TokenFlags.StatementDoesntSupportAttributes),
-                               "Table out of sync with enum - flags Sequence");
-            Diagnostics.Assert(GetTraits(TokenKind.Shr) == (TokenFlags.BinaryOperator | TokenFlags.BinaryPrecedenceComparison | TokenFlags.CanConstantFold),
-                               "Table out of sync with enum - flags Shr");
-            Diagnostics.Assert(s_tokenText[(int)TokenKind.Shr].Equals("-shr", StringComparison.OrdinalIgnoreCase),
-                               "Table out of sync with enum - text Shr");
+            Diagnostics.Assert(
+                GetTraits(TokenKind.Begin) == (TokenFlags.Keyword | TokenFlags.ScriptBlockBlockName),
+                "Table out of sync with enum - flags Begin");
+            Diagnostics.Assert(
+                GetTraits(TokenKind.Workflow) == (TokenFlags.Keyword | TokenFlags.StatementDoesntSupportAttributes),
+                "Table out of sync with enum - flags Workflow");
+            Diagnostics.Assert(
+                GetTraits(TokenKind.Sequence) == (TokenFlags.Keyword | TokenFlags.StatementDoesntSupportAttributes),
+                "Table out of sync with enum - flags Sequence");
+            Diagnostics.Assert(
+                GetTraits(TokenKind.Shr) == (TokenFlags.BinaryOperator | TokenFlags.BinaryPrecedenceComparison | TokenFlags.CanConstantFold),
+                "Table out of sync with enum - flags Shr");
+            Diagnostics.Assert(
+                s_tokenText[(int)TokenKind.Shr].Equals("-shr", StringComparison.OrdinalIgnoreCase),
+                "Table out of sync with enum - text Shr");
         }
 #endif
 
