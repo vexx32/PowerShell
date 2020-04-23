@@ -722,6 +722,7 @@ namespace System.Management.Automation
             var beginBlock = scriptBlockAst.BeginBlock;
             var processBlock = scriptBlockAst.ProcessBlock;
             var endBlock = scriptBlockAst.EndBlock;
+            var disposeBlock = scriptBlockAst.DisposeBlock;
 
             // The following is used when we don't find OutputType, which is checked elsewhere.
             if (beginBlock != null)
@@ -737,6 +738,11 @@ namespace System.Management.Automation
             if (endBlock != null)
             {
                 res.AddRange(InferTypes(endBlock));
+            }
+
+            if (disposeBlock != null)
+            {
+                res.AddRange(InferTypes(disposeBlock));
             }
 
             return res;

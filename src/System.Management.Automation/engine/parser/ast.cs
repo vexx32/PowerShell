@@ -837,6 +837,84 @@ namespace System.Management.Automation.Language
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ScriptBlockAst"/> class.
+        /// This construction uses explicitly named begin/process/end/dispose blocks.
+        /// </summary>
+        /// <param name="extent">The extent of the script block.</param>
+        /// <param name="usingStatements">The list of using statments, may be null.</param>
+        /// <param name="attributes">The set of attributes for the script block.</param>
+        /// <param name="paramBlock">The ast for the param block, may be null.</param>
+        /// <param name="beginBlock">The ast for the begin block, may be null.</param>
+        /// <param name="processBlock">The ast for the process block, may be null.</param>
+        /// <param name="endBlock">The ast for the end block, may be null.</param>
+        /// <param name="disposeBlock">The ast for the dispose block, may be null.</param>
+        /// <param name="dynamicParamBlock">The ast for the dynamicparam block, may be null.</param>
+        /// <exception cref="PSArgumentNullException">
+        /// If <paramref name="extent"/> is null.
+        /// </exception>
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "param")]
+        public ScriptBlockAst(
+            IScriptExtent extent,
+            IEnumerable<UsingStatementAst> usingStatements,
+            IEnumerable<AttributeAst> attributes,
+            ParamBlockAst paramBlock,
+            NamedBlockAst beginBlock,
+            NamedBlockAst processBlock,
+            NamedBlockAst endBlock,
+            NamedBlockAst disposeBlock,
+            NamedBlockAst dynamicParamBlock)
+            : base(extent)
+        {
+            SetUsingStatements(usingStatements);
+
+            if (attributes != null)
+            {
+                this.Attributes = new ReadOnlyCollection<AttributeAst>(attributes.ToArray());
+                SetParents(Attributes);
+            }
+            else
+            {
+                this.Attributes = s_emptyAttributeList;
+            }
+
+            if (paramBlock != null)
+            {
+                this.ParamBlock = paramBlock;
+                SetParent(paramBlock);
+            }
+
+            if (beginBlock != null)
+            {
+                this.BeginBlock = beginBlock;
+                SetParent(beginBlock);
+            }
+
+            if (processBlock != null)
+            {
+                this.ProcessBlock = processBlock;
+                SetParent(processBlock);
+            }
+
+            if (endBlock != null)
+            {
+                this.EndBlock = endBlock;
+                SetParent(endBlock);
+            }
+
+            if (disposeBlock != null)
+            {
+                this.DisposeBlock = disposeBlock;
+                SetParent(disposeBlock);
+            }
+
+            if (dynamicParamBlock != null)
+            {
+                this.DynamicParamBlock = dynamicParamBlock;
+                SetParent(dynamicParamBlock);
+            }
+        }
+
+        /// <summary>
         /// Construct a ScriptBlockAst that uses explicitly named begin/process/end blocks.
         /// </summary>
         /// <param name="extent">The extent of the script block.</param>
@@ -862,6 +940,35 @@ namespace System.Management.Automation.Language
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ScriptBlockAst"/> class.
+        /// This construction uses explicitly named begin/process/end/dispose blocks.
+        /// </summary>
+        /// <param name="extent">The extent of the script block.</param>
+        /// <param name="usingStatements">The list of using statments, may be null.</param>
+        /// <param name="paramBlock">The ast for the param block, may be null.</param>
+        /// <param name="beginBlock">The ast for the begin block, may be null.</param>
+        /// <param name="processBlock">The ast for the process block, may be null.</param>
+        /// <param name="endBlock">The ast for the end block, may be null.</param>
+        /// <param name="disposeBlock">The ast for the dispose block, may be null.</param>
+        /// <param name="dynamicParamBlock">The ast for the dynamicparam block, may be null.</param>
+        /// <exception cref="PSArgumentNullException">
+        /// If <paramref name="extent"/> is null.
+        /// </exception>
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "param")]
+        public ScriptBlockAst(
+            IScriptExtent extent,
+            IEnumerable<UsingStatementAst> usingStatements,
+            ParamBlockAst paramBlock,
+            NamedBlockAst beginBlock,
+            NamedBlockAst processBlock,
+            NamedBlockAst endBlock,
+            NamedBlockAst disposeBlock,
+            NamedBlockAst dynamicParamBlock)
+            : this(extent, usingStatements, null, paramBlock, beginBlock, processBlock, endBlock, disposeBlock, dynamicParamBlock)
+        {
+        }
+
+        /// <summary>
         /// Construct a ScriptBlockAst that uses explicitly named begin/process/end blocks.
         /// </summary>
         /// <param name="extent">The extent of the script block.</param>
@@ -881,6 +988,33 @@ namespace System.Management.Automation.Language
                               NamedBlockAst endBlock,
                               NamedBlockAst dynamicParamBlock)
             : this(extent, null, paramBlock, beginBlock, processBlock, endBlock, dynamicParamBlock)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScriptBlockAst"/> class.
+        /// This construction uses explicitly named begin/process/end/dispose blocks.
+        /// </summary>
+        /// <param name="extent">The extent of the script block.</param>
+        /// <param name="paramBlock">The ast for the param block, may be null.</param>
+        /// <param name="beginBlock">The ast for the begin block, may be null.</param>
+        /// <param name="processBlock">The ast for the process block, may be null.</param>
+        /// <param name="endBlock">The ast for the end block, may be null.</param>
+        /// <param name="disposeBlock">The ast for the dispose block, may be null.</param>
+        /// <param name="dynamicParamBlock">The ast for the dynamicparam block, may be null.</param>
+        /// <exception cref="PSArgumentNullException">
+        /// If <paramref name="extent"/> is null.
+        /// </exception>
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "param")]
+        public ScriptBlockAst(
+            IScriptExtent extent,
+            ParamBlockAst paramBlock,
+            NamedBlockAst beginBlock,
+            NamedBlockAst processBlock,
+            NamedBlockAst endBlock,
+            NamedBlockAst disposeBlock,
+            NamedBlockAst dynamicParamBlock)
+            : this(extent, null, paramBlock, beginBlock, processBlock, endBlock, disposeBlock, dynamicParamBlock)
         {
         }
 
@@ -1089,6 +1223,11 @@ namespace System.Management.Automation.Language
         public NamedBlockAst EndBlock { get; private set; }
 
         /// <summary>
+        /// Gets the ast representing the dispose block for a script block, or null if no dispose block was specified.
+        /// </summary>
+        public NamedBlockAst DisposeBlock { get; private set; }
+
+        /// <summary>
         /// The ast representing the dynamicparam block for a script block, or null if no dynamicparam block was specified.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Param")]
@@ -1167,17 +1306,25 @@ namespace System.Management.Automation.Language
             var newBeginBlock = CopyElement(this.BeginBlock);
             var newProcessBlock = CopyElement(this.ProcessBlock);
             var newEndBlock = CopyElement(this.EndBlock);
+            var newDisposeBlock = CopyElement(this.DisposeBlock);
             var newDynamicParamBlock = CopyElement(this.DynamicParamBlock);
             var newAttributes = CopyElements(this.Attributes);
             var newUsingStatements = CopyElements(this.UsingStatements);
 
-            var scriptBlockAst = new ScriptBlockAst(this.Extent, newUsingStatements, newAttributes, newParamBlock, newBeginBlock, newProcessBlock,
-                                                    newEndBlock, newDynamicParamBlock)
+            return new ScriptBlockAst(
+                this.Extent,
+                newUsingStatements,
+                newAttributes,
+                newParamBlock,
+                newBeginBlock,
+                newProcessBlock,
+                newEndBlock,
+                newDisposeBlock,
+                newDynamicParamBlock)
             {
                 IsConfiguration = this.IsConfiguration,
                 ScriptRequirements = this.ScriptRequirements
             };
-            return scriptBlockAst;
         }
 
         internal string ToStringForSerialization()
@@ -1339,18 +1486,37 @@ namespace System.Management.Automation.Language
                 }
             }
 
-            if (action == AstVisitAction.Continue && ParamBlock != null)
-                action = ParamBlock.InternalVisit(visitor);
-            if (action == AstVisitAction.Continue && DynamicParamBlock != null)
-                action = DynamicParamBlock.InternalVisit(visitor);
-            if (action == AstVisitAction.Continue && BeginBlock != null)
-                action = BeginBlock.InternalVisit(visitor);
-            if (action == AstVisitAction.Continue && ProcessBlock != null)
-                action = ProcessBlock.InternalVisit(visitor);
-            if (action == AstVisitAction.Continue && EndBlock != null)
-                action = EndBlock.InternalVisit(visitor);
+            if (!ShouldContinueAfterVisit(visitor, ParamBlock, ref action))
+            {
+                return visitor.CheckForPostAction(this, action);
+            }
+
+            if (!ShouldContinueAfterVisit(visitor, DynamicParamBlock, ref action))
+            {
+                return visitor.CheckForPostAction(this, action);
+            }
+
+            if (!ShouldContinueAfterVisit(visitor, BeginBlock, ref action))
+            {
+                return visitor.CheckForPostAction(this, action);
+            }
+
+            if (!ShouldContinueAfterVisit(visitor, ProcessBlock, ref action))
+            {
+                return visitor.CheckForPostAction(this, action);
+            }
+
+            if (!ShouldContinueAfterVisit(visitor, EndBlock, ref action))
+            {
+                return visitor.CheckForPostAction(this, action);
+            }
+
+            ShouldContinueAfterVisit(visitor, DisposeBlock, ref action);
             return visitor.CheckForPostAction(this, action);
         }
+
+        internal static bool ShouldContinueAfterVisit(AstVisitor visitor, Ast ast, ref AstVisitAction action)
+            => ast == null || (action = ast.InternalVisit(visitor)) == AstVisitAction.Continue;
 
         #endregion Visitors
 
@@ -1553,9 +1719,12 @@ namespace System.Management.Automation.Language
 
         internal PipelineAst GetSimplePipeline(bool allowMultiplePipelines, out string errorId, out string errorMsg)
         {
-            if (BeginBlock != null || ProcessBlock != null || DynamicParamBlock != null)
+            if (BeginBlock != null
+                || ProcessBlock != null
+                || DisposeBlock != null
+                || DynamicParamBlock != null)
             {
-                errorId = "CanConvertOneClauseOnly";
+                errorId = nameof(AutomationExceptions.CanConvertOneClauseOnly);
                 errorMsg = AutomationExceptions.CanConvertOneClauseOnly;
                 return null;
             }
@@ -1720,7 +1889,7 @@ namespace System.Management.Automation.Language
     public class NamedBlockAst : Ast
     {
         /// <summary>
-        /// Construct the ast for a begin, process, end, or dynamic param block.
+        /// Construct the ast for a begin, process, end, dispose, or dynamic param block.
         /// </summary>
         /// <param name="extent">
         /// The extent of the block.  If <paramref name="unnamed"/> is false, the extent includes
@@ -1732,6 +1901,7 @@ namespace System.Management.Automation.Language
         /// <item><see cref="TokenKind.Begin"/></item>
         /// <item><see cref="TokenKind.Process"/></item>
         /// <item><see cref="TokenKind.End"/></item>
+        /// <item><see cref="TokenKind.Dispose"/></item>
         /// <item><see cref="TokenKind.Dynamicparam"/></item>
         /// </list>
         /// </param>
@@ -1751,7 +1921,9 @@ namespace System.Management.Automation.Language
             // Validate the block name.  If the block is unnamed, it must be an End block (for a function)
             // or Process block (for a filter).
             if (!blockName.HasTrait(TokenFlags.ScriptBlockBlockName)
-                || (unnamed && (blockName == TokenKind.Begin || blockName == TokenKind.Dynamicparam)))
+                || (unnamed && (blockName == TokenKind.Begin
+                    || blockName == TokenKind.Dispose
+                    || blockName == TokenKind.Dynamicparam)))
             {
                 throw PSTraceSource.NewArgumentException("blockName");
             }
@@ -1809,6 +1981,7 @@ namespace System.Management.Automation.Language
         /// <item><see cref="TokenKind.Begin"/></item>
         /// <item><see cref="TokenKind.Process"/></item>
         /// <item><see cref="TokenKind.End"/></item>
+        /// <item><see cref="TokenKind.Dispose"/></item>
         /// <item><see cref="TokenKind.Dynamicparam"/></item>
         /// </list>
         /// </summary>

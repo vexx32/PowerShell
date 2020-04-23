@@ -954,6 +954,11 @@ namespace System.Management.Automation.Language
                 scriptBlockAst.EndBlock.Accept(this);
             }
 
+            if (scriptBlockAst.DisposeBlock != null)
+            {
+                scriptBlockAst.DisposeBlock.Accept(this);
+            }
+
             _currentBlock.FlowsTo(_exitBlock);
 
             return null;
