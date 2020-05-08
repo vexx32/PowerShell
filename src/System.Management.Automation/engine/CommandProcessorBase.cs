@@ -602,40 +602,6 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Executes the appropriate disposal methods for script commands.
-        /// <see cref="DlrScriptCommandProcessor"/> is itself a command processor, so interpreted functions cannot be
-        /// reliably disposed without also disposing the entire command processor. Instead, it implements its own
-        /// <see cref="DlrScriptCommandProcessor.InvokeDisposeBlock"/> method to perform the same function as its
-        /// compiled counterpart <see cref="PSScriptCmdlet.Dispose"/>, which is a proper IDisposable implementation.
-        /// </summary>
-        internal virtual void DisposeScriptCommands()
-        {
-            try
-            {
-                if (Command is PSScriptCmdlet scriptCmdlet)
-                {
-                    using (commandRuntime.AllowThisCommandToWrite(true))
-                    using (ParameterBinderBase.bindingTracer.TraceScope("CALLING Dispose"))
-                    {
-                        scriptCmdlet.Dispose();
-                    }
-                }
-                else if (this is DlrScriptCommandProcessor scriptProcessor)
-                {
-                    using (commandRuntime.AllowThisCommandToWrite(true))
-                    using (ParameterBinderBase.bindingTracer.TraceScope("CALLING Dispose"))
-                    {
-                        scriptProcessor.InvokeDisposeBlock();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw ManageInvocationException(e);
-            }
-        }
-
-        /// <summary>
         /// Calls the virtual Complete method after setting the appropriate session state scope.
         /// </summary>
         internal void DoComplete()
@@ -691,9 +657,40 @@ namespace System.Management.Automation
                     Context.EngineSessionState = _previousCommandSessionState;
                 }
             }
+        }
 
-            // Dispose the command as soon as it's completed.
-            Dispose();
+        /// <summary>
+        /// Executes the appropriate disposal methods for script commands.
+        /// <see cref="DlrScriptCommandProcessor"/> is itself a command processor, so interpreted functions cannot be
+        /// reliably disposed without also disposing the entire command processor. Instead, it implements its own
+        /// <see cref="DlrScriptCommandProcessor.InvokeDisposeBlock"/> method to perform the same function as its
+        /// compiled counterpart <see cref="PSScriptCmdlet.Dispose"/>, which is a proper IDisposable implementation.
+        /// </summary>
+        internal virtual void DisposeScriptCommands()
+        {
+            try
+            {
+                if (Command is PSScriptCmdlet scriptCmdlet)
+                {
+                    using (commandRuntime.AllowThisCommandToWrite(true))
+                    using (ParameterBinderBase.bindingTracer.TraceScope("CALLING Dispose"))
+                    {
+                        scriptCmdlet.Dispose();
+                    }
+                }
+                else if (this is DlrScriptCommandProcessor scriptProcessor)
+                {
+                    using (commandRuntime.AllowThisCommandToWrite(true))
+                    using (ParameterBinderBase.bindingTracer.TraceScope("CALLING Dispose"))
+                    {
+                        scriptProcessor.InvokeDisposeBlock();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw ManageInvocationException(e);
+            }
         }
 
         /// <summary>
@@ -976,6 +973,7 @@ namespace System.Management.Automation
             {
                 if (disposing)
                 {
+                    bool isAlreadyStopping = ExceptionHandlingOps.SuspendStoppingPipeline(Context);
                     Pipe oldErrorOutputPipe = _context.ShellFunctionErrorOutputPipe;
                     CommandProcessorBase oldCurrentCommandProcessor = _context.CurrentCommandProcessor;
 
@@ -998,6 +996,7 @@ namespace System.Management.Automation
 
                         _context.ShellFunctionErrorOutputPipe = oldErrorOutputPipe;
                         _context.CurrentCommandProcessor = oldCurrentCommandProcessor;
+                        ExceptionHandlingOps.RestoreStoppingPipeline(Context, isAlreadyStopping);
 
                         // Destroy the local scope at this point if there is one...
                         if (_useLocalScope && CommandScope != null)
