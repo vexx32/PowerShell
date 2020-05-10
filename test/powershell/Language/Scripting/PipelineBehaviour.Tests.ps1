@@ -31,6 +31,17 @@ Describe 'Function Pipeline Behaviour' -Tag 'CI' {
 
     Context 'Output Behaviour on Error States' {
 
+        BeforeAll {
+            $powershell = $null
+        }
+
+        AfterEach {
+            if ($powershell) {
+                $powershell.Dispose()
+                $powershell = $null
+            }
+        }
+
         It 'does not execute End {} if the pipeline is halted during Process {}' {
             # We don't need Should -Not -Throw as if this reaches end{} and throws the test will fail anyway.
             1..10 |
@@ -54,9 +65,58 @@ Describe 'Function Pipeline Behaviour' -Tag 'CI' {
             }
             $Script | Should -Throw -ExpectedMessage "Dispose block hit."
         }
-    }
 
-    AfterAll {
+        It 'still executes Dispose {} when StopProcessing() is triggered mid-pipeline' {
+            $script = @"
+                function test {
+                    begin {}
+                    process {
+                        Start-Sleep -Seconds 10
+                    }
+                    end {}
+                    dispose {
+                        Write-Information "DISPOSE"
+                    }
 
+                }
+"@
+            $powershell = [powershell]::Create()
+            $powershell.AddScript($script).AddStatement().AddCommand('test') > $null
+
+            $asyncResult = $powershell.BeginInvoke()
+            Start-Sleep -Seconds 2
+            $powershell.Stop()
+
+            $powershell.EndInvoke($asyncResult) > $null
+            $powershell.Streams.Information[0].MessageData | Should -BeExactly "DISPOSE"
+        }
+
+        It 'still completes dispose {} execution when StopProcessing() is triggered mid-Dispose{}' {
+            $script = @"
+                function test {
+                    begin {}
+                    process {
+                        "PROCESS"
+                    }
+                    end {}
+                    dispose {
+                        Start-Sleep -Seconds 10
+                        Write-Information "DISPOSE"
+                    }
+
+                }
+"@
+            $powershell = [powershell]::Create()
+            $powershell.AddScript($script).AddStatement().AddCommand('test') > $null
+
+            $asyncResult = $powershell.BeginInvoke()
+            Start-Sleep -Seconds 2
+            $powershell.Stop()
+
+            $output = $powershell.EndInvoke($asyncResult)
+
+            $output | Should -Be "PROCESS"
+            $powershell.Streams.Information[0].MessageData | Should -BeExactly "DISPOSE"
+        }
     }
 }
