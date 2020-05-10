@@ -2516,7 +2516,7 @@ namespace System.Management.Automation
                 return;
             }
 
-            var oldOutputPipe = _functionContext._outputPipe;
+            var oldOutputPipe = _functionContext?._outputPipe;
 
             try
             {
@@ -2535,7 +2535,11 @@ namespace System.Management.Automation
             }
             finally
             {
-                _functionContext._outputPipe = oldOutputPipe;
+                if (_functionContext != null)
+                {
+                    _functionContext._outputPipe = oldOutputPipe;
+                }
+
                 this.DisposingEvent.SafeInvoke(this, EventArgs.Empty);
 
                 commandRuntime = null;

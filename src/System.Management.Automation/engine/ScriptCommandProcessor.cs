@@ -628,12 +628,14 @@ namespace System.Management.Automation
 
         internal void InvokeDisposeBlock()
         {
-            var oldOutputPipe = _functionContext._outputPipe;
+            var oldOutputPipe = _functionContext?._outputPipe;
             try
             {
                 if (_scriptBlock.HasDisposeBlock)
                 {
-                    var disposeBlock = _runOptimizedCode ? _scriptBlock.DisposeBlock : _scriptBlock.UnoptimizedDisposeBlock;
+                    var disposeBlock = _runOptimizedCode
+                        ? _scriptBlock.DisposeBlock
+                        : _scriptBlock.UnoptimizedDisposeBlock;
 
                     _functionContext._outputPipe = new Pipe
                     {
@@ -646,7 +648,11 @@ namespace System.Management.Automation
             }
             finally
             {
-                _functionContext._outputPipe = oldOutputPipe;
+                if (_functionContext != null)
+                {
+                    _functionContext._outputPipe = oldOutputPipe;
+                }
+
                 ScriptBlock.LogScriptBlockEnd(_scriptBlock, Context.CurrentRunspace.InstanceId);
             }
         }
