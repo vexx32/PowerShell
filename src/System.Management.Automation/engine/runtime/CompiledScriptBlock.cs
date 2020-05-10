@@ -2522,13 +2522,17 @@ namespace System.Management.Automation
             {
                 if (_scriptBlock.HasDisposeBlock)
                 {
-                    _functionContext._outputPipe = new Pipe
+                    var disposeBlock = _runOptimized ? _scriptBlock.DisposeBlock : _scriptBlock.UnoptimizedDisposeBlock;
+                    if (_functionContext != null)
                     {
-                        NullPipe = true
-                    };
+                        _functionContext._outputPipe = new Pipe
+                        {
+                            NullPipe = true
+                        };
+                    }
 
                     RunClause(
-                        _runOptimized ? _scriptBlock.DisposeBlock : _scriptBlock.UnoptimizedDisposeBlock,
+                        disposeBlock,
                         AutomationNull.Value,
                         AutomationNull.Value);
                 }

@@ -633,6 +633,10 @@ namespace System.Management.Automation.Internal
                             commandRequestingUpstreamCommandsToStop = stopUpstreamCommandsException.RequestingCommandProcessor;
                         }
                     }
+                    finally
+                    {
+                        commandProcessor.Dispose();
+                    }
 
                     EtwActivity.SetActivityId(commandProcessor.PipelineActivityId);
 

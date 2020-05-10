@@ -637,10 +637,13 @@ namespace System.Management.Automation
                         ? _scriptBlock.DisposeBlock
                         : _scriptBlock.UnoptimizedDisposeBlock;
 
-                    _functionContext._outputPipe = new Pipe
+                    if (_functionContext != null)
                     {
-                        NullPipe = true
-                    };
+                        _functionContext._outputPipe = new Pipe
+                        {
+                            NullPipe = true
+                        };
+                    }
 
                     // run with no pipeline input or $input enumerator
                     RunClause(disposeBlock, AutomationNull.Value, AutomationNull.Value);
