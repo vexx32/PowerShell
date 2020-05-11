@@ -1297,6 +1297,10 @@ namespace System.Management.Automation.Runspaces
     /// </summary>
     internal class PipelineStopper
     {
+        private readonly SemaphoreSlim _criticalRegionSemaphore = new SemaphoreSlim(1, 1);
+
+        private int _criticalRegionDepth;
+
         /// <summary>
         /// Stack of current executing pipeline processor.
         /// </summary>
@@ -1307,10 +1311,6 @@ namespace System.Management.Automation.Runspaces
         /// </summary>
         private object _syncRoot = new object();
 
-        private readonly SemaphoreSlim _criticalRegionSemaphore = new SemaphoreSlim(1, 1);
-
-        private int _queue;
-
         internal void AcquirePipelineStopPermission()
         {
             _criticalRegionSemaphore.Wait();
@@ -1319,13 +1319,13 @@ namespace System.Management.Automation.Runspaces
 
         internal void EnterCriticalRegion()
         {
-            Interlocked.Increment(ref _queue);
-            _criticalRegionSemaphore.Wait(0);
+            Interlocked.Increment(ref _criticalRegionDepth);
+            _criticalRegionSemaphore.Wait(millisecondsTimeout: 0);
         }
 
         internal void ExitCriticalRegion()
         {
-            if (Interlocked.Decrement(ref _queue) == 0)
+            if (Interlocked.Decrement(ref _criticalRegionDepth) == 0)
             {
                 _criticalRegionSemaphore.Release();
             }
@@ -1333,7 +1333,7 @@ namespace System.Management.Automation.Runspaces
 
         internal bool InCriticalRegion
         {
-            get => Interlocked.CompareExchange(ref _queue, 0, 0) != 0;
+            get => Interlocked.CompareExchange(ref _criticalRegionDepth, value: 0, comparand: 0) != 0;
         }
 
         private LocalPipeline _localPipeline;

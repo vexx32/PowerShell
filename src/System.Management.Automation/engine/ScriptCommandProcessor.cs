@@ -630,31 +630,11 @@ namespace System.Management.Automation
         internal void InvokeDisposeBlock()
         {
             ExecutionContext currentContext = LocalPipeline.GetExecutionContextFromTLS();
-            if (Context != currentContext)
+            if (_scriptBlock.HasDisposeBlock && Context != currentContext)
             {
-                // Something went wrong; Dispose() is being called from the wrong thread.
+                // Something went wrong; Dispose{} is being called from the wrong thread.
                 // Create an event to call it from the correct thread.
-                Context.Events.SubscribeEvent(
-                    source: null,
-                    eventName: PSEngineEvent.OnScriptCommandDispose,
-                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
-                    data: null,
-                    handlerDelegate: new PSEventReceivedEventHandler(OnDisposeInvocationEventHandler),
-                    supportEvent: true,
-                    forwardEvent: false,
-                    shouldQueueAndProcessInExecutionThread: true,
-                    maxTriggerCount: 1);
-
-                var disposeInvocationEventArgs = new ScriptCommandDisposeInvocationEventArgs(this);
-
-                Context.Events.GenerateEvent(
-                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
-                    sender: null,
-                    args: new object[1] { disposeInvocationEventArgs },
-                    extraData: null,
-                    processInCurrentThread: true,
-                    waitForCompletionInCurrentThread: true);
-
+                InvokeDisposeScriptInOriginalContext();
                 return;
             }
 
@@ -692,9 +672,38 @@ namespace System.Management.Automation
 
         #region MarshallingForDispose
 
+        private void InvokeDisposeScriptInOriginalContext()
+        {
+            Context.Events.SubscribeEvent(
+                source: null,
+                eventName: PSEngineEvent.OnScriptCommandDispose,
+                sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                data: null,
+                handlerDelegate: new PSEventReceivedEventHandler(OnDisposeInvocationEventHandler),
+                supportEvent: true,
+                forwardEvent: false,
+                shouldQueueAndProcessInExecutionThread: true,
+                maxTriggerCount: 1);
+
+            var disposeInvocationEventArgs = new ScriptCommandDisposeInvocationEventArgs(this);
+
+            Context.Events.GenerateEvent(
+                sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                sender: null,
+                args: new object[] { disposeInvocationEventArgs },
+                extraData: null,
+                processInCurrentThread: true,
+                waitForCompletionInCurrentThread: true);
+        }
+
         /// <summary>
         /// Handles OnDisposeInvoke event, this is called by the event manager.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">
+        /// Arguments to pass to the event, which must be of the type
+        /// <see cref="ScriptCommandDisposeInvocationEventArgs"/>
+        /// </param>
         private static void OnDisposeInvocationEventHandler(object sender, PSEventArgs args)
         {
             var eventArgs = (object)args.SourceEventArgs as ScriptCommandDisposeInvocationEventArgs;
@@ -702,7 +711,18 @@ namespace System.Management.Automation
                 eventArgs?.ScriptCommandProcessor != null,
                 $"Event Arguments to {nameof(OnDisposeInvocationEventHandler)} should not be null");
 
-            eventArgs.ScriptCommandProcessor.InvokeDisposeBlock();
+            bool wasAlreadyStopping = ExceptionHandlingOps.SuspendStoppingPipeline(
+                eventArgs.ScriptCommandProcessor.Context);
+            try
+            {
+                eventArgs.ScriptCommandProcessor.InvokeDisposeBlock();
+            }
+            finally
+            {
+                ExceptionHandlingOps.RestoreStoppingPipeline(
+                    eventArgs.ScriptCommandProcessor.Context,
+                    wasAlreadyStopping);
+            }
         }
 
         #endregion MarshallingForDispose
@@ -714,7 +734,7 @@ namespace System.Management.Automation
     internal sealed class ScriptCommandDisposeInvocationEventArgs : EventArgs
     {
         /// <summary>
-        /// Constructs <see cref="ScriptCommandDisposeInvocationEventArgs"/>.
+        /// Initializes a new instance of the <see cref="ScriptCommandDisposeInvocationEventArgs"/> class.
         /// </summary>
         /// <param name="commandProcessor">The command processor to dispose.</param>
         /// <exception cref="ArgumentNullException"><paramref name="commandProcessor"/> is null.</exception>
