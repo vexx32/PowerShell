@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
+using System.Management.Automation.Runspaces;
 using System.Reflection;
 
 using Dbg = System.Management.Automation.Diagnostics;
@@ -628,6 +629,35 @@ namespace System.Management.Automation
 
         internal void InvokeDisposeBlock()
         {
+            ExecutionContext currentContext = LocalPipeline.GetExecutionContextFromTLS();
+            if (Context != currentContext)
+            {
+                // Something went wrong; Dispose() is being called from the wrong thread.
+                // Create an event to call it from the correct thread.
+                Context.Events.SubscribeEvent(
+                    source: null,
+                    eventName: PSEngineEvent.OnScriptCommandDispose,
+                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                    data: null,
+                    handlerDelegate: new PSEventReceivedEventHandler(OnDisposeInvocationEventHandler),
+                    supportEvent: true,
+                    forwardEvent: false,
+                    shouldQueueAndProcessInExecutionThread: true,
+                    maxTriggerCount: 1);
+
+                var disposeInvocationEventArgs = new ScriptCommandDisposeInvocationEventArgs(this);
+
+                Context.Events.GenerateEvent(
+                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                    sender: null,
+                    args: new object[1] { disposeInvocationEventArgs },
+                    extraData: null,
+                    processInCurrentThread: true,
+                    waitForCompletionInCurrentThread: true);
+
+                return;
+            }
+
             var oldOutputPipe = _functionContext?._outputPipe;
             try
             {
@@ -659,5 +689,48 @@ namespace System.Management.Automation
                 ScriptBlock.LogScriptBlockEnd(_scriptBlock, Context.CurrentRunspace.InstanceId);
             }
         }
+
+        #region MarshallingForDispose
+
+        /// <summary>
+        /// Handles OnDisposeInvoke event, this is called by the event manager.
+        /// </summary>
+        private static void OnDisposeInvocationEventHandler(object sender, PSEventArgs args)
+        {
+            var eventArgs = (object)args.SourceEventArgs as ScriptCommandDisposeInvocationEventArgs;
+            Diagnostics.Assert(
+                eventArgs?.ScriptCommandProcessor != null,
+                $"Event Arguments to {nameof(OnDisposeInvocationEventHandler)} should not be null");
+
+            eventArgs.ScriptCommandProcessor.InvokeDisposeBlock();
+        }
+
+        #endregion MarshallingForDispose
+    }
+
+    /// <summary>
+    /// Defines Event arguments passed to OnDisposeInvocationEventHandler.
+    /// </summary>
+    internal sealed class ScriptCommandDisposeInvocationEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Constructs <see cref="ScriptCommandDisposeInvocationEventArgs"/>.
+        /// </summary>
+        /// <param name="commandProcessor">The command processor to dispose.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="commandProcessor"/> is null.</exception>
+        internal ScriptCommandDisposeInvocationEventArgs(DlrScriptCommandProcessor commandProcessor)
+        {
+            if (commandProcessor == null)
+            {
+                throw new ArgumentNullException(nameof(commandProcessor));
+            }
+
+            ScriptCommandProcessor = commandProcessor;
+        }
+
+        /// <summary>
+        /// Gets the script command processor to be disposed.
+        /// </summary>
+        internal DlrScriptCommandProcessor ScriptCommandProcessor { get; }
     }
 }

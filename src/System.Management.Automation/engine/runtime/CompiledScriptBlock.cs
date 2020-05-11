@@ -12,11 +12,9 @@ using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Tracing;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 #if LEGACYTELEMETRY
 using Microsoft.PowerShell.Telemetry.Internal;
 #endif
@@ -2516,6 +2514,35 @@ namespace System.Management.Automation
                 return;
             }
 
+            ExecutionContext currentContext = LocalPipeline.GetExecutionContextFromTLS();
+            if (Context != currentContext)
+            {
+                // Something went wrong; Dispose() is being called from the wrong thread.
+                // Create an event to call it from the correct thread.
+                Context.Events.SubscribeEvent(
+                    source: null,
+                    eventName: PSEngineEvent.OnScriptCommandDispose,
+                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                    data: null,
+                    handlerDelegate: new PSEventReceivedEventHandler(OnDisposeInvocationEventHandler),
+                    supportEvent: true,
+                    forwardEvent: false,
+                    shouldQueueAndProcessInExecutionThread: true,
+                    maxTriggerCount: 1);
+
+                var disposeInvocationEventArgs = new ScriptCmdletDisposeInvocationEventArgs(this);
+
+                Context.Events.GenerateEvent(
+                    sourceIdentifier: PSEngineEvent.OnScriptCommandDispose,
+                    sender: null,
+                    args: new object[1] { disposeInvocationEventArgs },
+                    extraData: null,
+                    processInCurrentThread: true,
+                    waitForCompletionInCurrentThread: true);
+
+                return;
+            }
+
             var oldOutputPipe = _functionContext?._outputPipe;
 
             try
@@ -2556,5 +2583,48 @@ namespace System.Management.Automation
         }
 
         #endregion IDispose
+
+        #region MarshallingForDispose
+
+        /// <summary>
+        /// Handles OnDisposeInvoke event, this is called by the event manager.
+        /// </summary>
+        private static void OnDisposeInvocationEventHandler(object sender, PSEventArgs args)
+        {
+            var eventArgs = (object)args.SourceEventArgs as ScriptCmdletDisposeInvocationEventArgs;
+            Diagnostics.Assert(
+                eventArgs != null,
+                $"Event Arguments to {nameof(OnDisposeInvocationEventHandler)} should not be null");
+
+            eventArgs.ScriptCmdlet?.Dispose();
+        }
+
+        #endregion MarshallingForDispose
+    }
+
+    /// <summary>
+    /// Defines Event arguments passed to OnDisposeInvocationEventHandler.
+    /// </summary>
+    internal sealed class ScriptCmdletDisposeInvocationEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Constructs <see cref="ScriptCmdletDisposeInvocationEventArgs"/>.
+        /// </summary>
+        /// <param name="cmdlet">The command processor to dispose.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="cmdlet"/> is null.</exception>
+        internal ScriptCmdletDisposeInvocationEventArgs(PSScriptCmdlet cmdlet)
+        {
+            if (cmdlet == null)
+            {
+                throw new ArgumentNullException(nameof(cmdlet));
+            }
+
+            ScriptCmdlet = cmdlet;
+        }
+
+        /// <summary>
+        /// Gets the script cmdlet to be disposed.
+        /// </summary>
+        internal PSScriptCmdlet ScriptCmdlet { get; }
     }
 }

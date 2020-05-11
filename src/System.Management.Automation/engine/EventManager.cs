@@ -1858,6 +1858,11 @@ namespace System.Management.Automation
         internal const string OnScriptBlockInvoke = "PowerShell.OnScriptBlockInvoke";
 
         /// <summary>
+        /// Called when a script command is being disposed.
+        /// </summary>
+        internal const string OnScriptCommandDispose = "PowerShell.OnScriptCommandDispose";
+
+        /// <summary>
         /// Called during scriptblock invocation.
         /// </summary>
         internal const string GetCommandInfoParameterMetadata = "PowerShell.GetCommandInfoParameterMetadata";
