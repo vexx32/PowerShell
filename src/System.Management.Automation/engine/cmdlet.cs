@@ -37,13 +37,7 @@ namespace System.Management.Automation
         /// Lists the common parameters that are added by the PowerShell engine to any cmdlet that derives
         /// from PSCmdlet.
         /// </summary>
-        public static HashSet<string> CommonParameters
-        {
-            get
-            {
-                return s_commonParameters.Value;
-            }
-        }
+        public static HashSet<string> CommonParameters { get => s_commonParameters.Value; }
 
         private static readonly Lazy<HashSet<string>> s_commonParameters = new Lazy<HashSet<string>>(
             () =>
@@ -59,13 +53,7 @@ namespace System.Management.Automation
         /// Lists the common parameters that are added by the PowerShell engine when a cmdlet defines
         /// additional capabilities (SupportsShouldProcess, SupportsTransactions)
         /// </summary>
-        public static HashSet<string> OptionalCommonParameters
-        {
-            get
-            {
-                return s_optionalCommonParameters.Value;
-            }
-        }
+        public static HashSet<string> OptionalCommonParameters { get => s_optionalCommonParameters.Value; }
 
         private static readonly Lazy<HashSet<string>> s_optionalCommonParameters = new Lazy<HashSet<string>>(
             () =>
@@ -103,10 +91,7 @@ namespace System.Management.Automation
         /// The name of the parameter set in effect.
         /// </summary>
         /// <value>the parameter set name</value>
-        internal string _ParameterSetName
-        {
-            get { return _parameterSetName; }
-        }
+        internal string _ParameterSetName { get; private set; } = string.Empty;
 
         /// <summary>
         /// Sets the parameter set.
@@ -116,10 +101,8 @@ namespace System.Management.Automation
         /// </param>
         internal void SetParameterSetName(string parameterSetName)
         {
-            _parameterSetName = parameterSetName;
+            _ParameterSetName = parameterSetName;
         }
-
-        private string _parameterSetName = string.Empty;
 
         #region Override Internal
 
@@ -1687,15 +1670,10 @@ namespace System.Management.Automation
         [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
         public PSTransactionContext CurrentPSTransaction
         {
-            get
-            {
-                if (commandRuntime != null)
-                    return commandRuntime.CurrentPSTransaction;
-                else
-                    // We want to throw in this situation, and want to use a
-                    // property because it mimics the C# using(TransactionScope ...) syntax
-                    throw new NotImplementedException("CurrentPSTransaction");
-            }
+            get => commandRuntime?.CurrentPSTransaction
+                // We want to throw in this situation, and want to use a
+                // property because it mimics the C# using(TransactionScope ...) syntax
+                ?? throw new NotImplementedException(nameof(CurrentPSTransaction));
         }
         #endregion Transaction Support
 
