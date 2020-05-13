@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #pragma warning disable 1634, 1691
+#nullable enable
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
@@ -135,7 +136,7 @@ namespace System.Management.Automation
         /// </exception>
         internal override void DoBeginProcessing()
         {
-            MshCommandRuntime mshRuntime = this.CommandRuntime as MshCommandRuntime;
+            var mshRuntime = CommandRuntime as MshCommandRuntime;
 
             if (mshRuntime != null)
             {
@@ -258,7 +259,7 @@ namespace System.Management.Automation
                     throw PSTraceSource.NewArgumentNullException("resourceId");
 
                 ResourceManager manager = ResourceManagerCache.GetResourceManager(this.GetType().Assembly, baseName);
-                string retValue = null;
+                string? retValue = null;
 
                 try
                 {
@@ -678,7 +679,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                ICommandRuntime2 commandRuntime2 = commandRuntime as ICommandRuntime2;
+                var commandRuntime2 = commandRuntime as ICommandRuntime2;
                 if (commandRuntime2 != null)
                 {
                     string source = this.MyInvocation.PSCommandPath;
@@ -736,7 +737,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                ICommandRuntime2 commandRuntime2 = commandRuntime as ICommandRuntime2;
+                var commandRuntime2 = commandRuntime as ICommandRuntime2;
                 if (commandRuntime2 != null)
                 {
                     commandRuntime2.WriteInformation(informationRecord);
@@ -1565,7 +1566,7 @@ namespace System.Management.Automation
             {
                 if (commandRuntime != null)
                 {
-                    ICommandRuntime2 runtime2 = commandRuntime as ICommandRuntime2;
+                    var runtime2 = commandRuntime as ICommandRuntime2;
                     if (runtime2 != null)
                     {
                         return runtime2.ShouldContinue(query, caption, hasSecurityImpact, ref yesToAll, ref noToAll);
@@ -1831,4 +1832,3 @@ namespace System.Management.Automation
         WhatIf = 0x1,
     }
 }
-
