@@ -17,7 +17,7 @@ namespace System.Management.Automation
 {
     /// <summary>
     /// Defines members and overrides used by Cmdlets.
-    /// All Cmdlets must derive from <see cref="System.Management.Automation.Cmdlet"/>.
+    /// All Cmdlets must derive from <see cref="Cmdlet"/>.
     /// </summary>
     /// <remarks>
     /// There are two ways to create a Cmdlet: by deriving from the Cmdlet base class, and by
@@ -30,7 +30,7 @@ namespace System.Management.Automation
     /// In both cases, users should first develop and implement an object model to accomplish their
     /// task, extending the Cmdlet or PSCmdlet classes only as a thin management layer.
     /// </remarks>
-    /// <seealso cref="System.Management.Automation.Internal.InternalCommand"/>
+    /// <seealso cref="InternalCommand"/>
     public abstract partial class Cmdlet : InternalCommand
     {
         #region public_properties
@@ -82,12 +82,12 @@ namespace System.Management.Automation
         /// </summary>
         /// <remarks>
         /// If Stopping is true, many Cmdlet methods will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>.
+        /// <see cref="PipelineStoppedException"/>.
         ///
         /// In general, if a Cmdlet's override implementation of ProcessRecord etc.
-        /// throws <see cref="System.Management.Automation.PipelineStoppedException"/>, the best thing to do is to
+        /// throws <see cref="PipelineStoppedException"/>, the best thing to do is to
         /// shut down the operation and return to the caller.
-        /// It is acceptable to not catch <see cref="System.Management.Automation.PipelineStoppedException"/>
+        /// It is acceptable to not catch <see cref="PipelineStoppedException"/>
         /// and allow the exception to reach ProcessRecord.
         /// </remarks>
         public bool Stopping
@@ -96,7 +96,7 @@ namespace System.Management.Automation
             {
                 using (PSTransactionManager.GetEngineProtectionScope())
                 {
-                    return this.IsStopping;
+                    return IsStopping;
                 }
             }
         }
@@ -141,15 +141,15 @@ namespace System.Management.Automation
             if (mshRuntime != null)
             {
                 if (mshRuntime.UseTransaction &&
-                   (!this.Context.TransactionManager.HasTransaction))
+                   (!Context.TransactionManager.HasTransaction))
                 {
                     string error = TransactionStrings.NoTransactionStarted;
 
-                    if (this.Context.TransactionManager.IsLastTransactionCommitted)
+                    if (Context.TransactionManager.IsLastTransactionCommitted)
                     {
                         error = TransactionStrings.NoTransactionStartedFromCommit;
                     }
-                    else if (this.Context.TransactionManager.IsLastTransactionRolledBack)
+                    else if (Context.TransactionManager.IsLastTransactionRolledBack)
                     {
                         error = TransactionStrings.NoTransactionStartedFromRollback;
                     }
@@ -158,7 +158,7 @@ namespace System.Management.Automation
                 }
             }
 
-            this.BeginProcessing();
+            BeginProcessing();
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace System.Management.Automation
         /// </exception>
         internal override void DoProcessRecord()
         {
-            this.ProcessRecord();
+            ProcessRecord();
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace System.Management.Automation
         /// </exception>
         internal override void DoEndProcessing()
         {
-            this.EndProcessing();
+            EndProcessing();
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace System.Management.Automation
         /// </exception>
         internal override void DoStopProcessing()
         {
-            this.StopProcessing();
+            StopProcessing();
         }
 
         #endregion Override Internal
@@ -213,7 +213,7 @@ namespace System.Management.Automation
         /// Initializes the new instance of Cmdlet class.
         /// </summary>
         /// <remarks>
-        /// Only subclasses of <see cref="System.Management.Automation.Cmdlet"/>
+        /// Only subclasses of <see cref="Cmdlet"/>
         /// can be created.
         /// </remarks>
         protected Cmdlet()
@@ -234,20 +234,20 @@ namespace System.Management.Automation
         /// <param name="baseName">The base resource name.</param>
         /// <param name="resourceId">The resource id.</param>
         /// <returns>The resource string corresponding to baseName and resourceId.</returns>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref="ArgumentException">
         /// Invalid <paramref name="baseName"/> or <paramref name="resourceId"/>, or
         /// string not found in resources
         /// </exception>
         /// <remarks>
         /// This behavior may be used when the Cmdlet specifies
         /// HelpMessageBaseName and HelpMessageResourceId when defining
-        /// <see cref="System.Management.Automation.ParameterAttribute"/>,
+        /// <see cref="ParameterAttribute"/>,
         /// or when it uses the
-        /// <see cref="System.Management.Automation.ErrorDetails"/>
+        /// <see cref="ErrorDetails"/>
         /// constructor variants which take baseName and resourceId.
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.ParameterAttribute"/>
-        /// <seealso cref="System.Management.Automation.ErrorDetails"/>
+        /// <seealso cref="ParameterAttribute"/>
+        /// <seealso cref="ErrorDetails"/>
         public virtual string GetResourceString(string baseName, string resourceId)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -258,7 +258,7 @@ namespace System.Management.Automation
                 if (string.IsNullOrEmpty(resourceId))
                     throw PSTraceSource.NewArgumentNullException("resourceId");
 
-                ResourceManager manager = ResourceManagerCache.GetResourceManager(this.GetType().Assembly, baseName);
+                ResourceManager manager = ResourceManagerCache.GetResourceManager(GetType().Assembly, baseName);
                 string? retValue = null;
 
                 try
@@ -314,30 +314,30 @@ namespace System.Management.Automation
         /// The ErrorRecord contained in the ErrorRecord property of
         /// an exception which implements IContainsErrorRecord
         /// should not be passed directly to WriteError, since it contains
-        /// a <see cref="System.Management.Automation.ParentContainsErrorRecordException"/>
+        /// a <see cref="ParentContainsErrorRecordException"/>
         /// rather than the real exception.
         /// </remarks>
         /// <param name="errorRecord">Error.</param>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread
         /// </exception>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
         /// <remarks>
-        /// <see cref="System.Management.Automation.Cmdlet.ThrowTerminatingError"/>
+        /// <see cref="ThrowTerminatingError"/>
         /// terminates the command, where
-        /// <see cref="System.Management.Automation.ICommandRuntime.WriteError"/>
+        /// <see cref="ICommandRuntime.WriteError"/>
         /// allows the command to continue.
         ///
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         public void WriteError(ErrorRecord errorRecord)
         {
@@ -346,7 +346,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteError(errorRecord);
                 else
-                    throw new System.NotImplementedException("WriteError");
+                    throw new NotImplementedException("WriteError");
             }
         }
         /// <summary>
@@ -356,20 +356,20 @@ namespace System.Management.Automation
         /// The object that needs to be written.  This will be written as
         /// a single object, even if it is an enumeration.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteObject may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
         /// and only from that thread.
         /// </exception>
-        /// <seealso cref="System.Management.Automation.ICommandRuntime.WriteObject(object,bool)"/>
-        /// <seealso cref="System.Management.Automation.ICommandRuntime.WriteError(ErrorRecord)"/>
+        /// <seealso cref="ICommandRuntime.WriteObject(object,bool)"/>
+        /// <seealso cref="ICommandRuntime.WriteError(ErrorRecord)"/>
         public void WriteObject(object sendToPipeline)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -377,7 +377,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteObject(sendToPipeline);
                 else
-                    throw new System.NotImplementedException("WriteObject");
+                    throw new NotImplementedException("WriteObject");
             }
         }
         /// <summary>
@@ -392,20 +392,20 @@ namespace System.Management.Automation
         /// <param name="enumerateCollection">
         /// true if the collection should be enumerated
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteObject may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
         /// and only from that thread.
         /// </exception>
-        /// <seealso cref="System.Management.Automation.ICommandRuntime.WriteObject(object)"/>
-        /// <seealso cref="System.Management.Automation.ICommandRuntime.WriteError(ErrorRecord)"/>
+        /// <seealso cref="ICommandRuntime.WriteObject(object)"/>
+        /// <seealso cref="ICommandRuntime.WriteError(ErrorRecord)"/>
         public void WriteObject(object sendToPipeline, bool enumerateCollection)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -413,7 +413,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteObject(sendToPipeline, enumerateCollection);
                 else
-                    throw new System.NotImplementedException("WriteObject");
+                    throw new NotImplementedException("WriteObject");
             }
         }
 
@@ -421,13 +421,13 @@ namespace System.Management.Automation
         /// Display verbose information.
         /// </summary>
         /// <param name="text">Verbose output.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteVerbose may only be called during a call to this Cmdlets's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -440,9 +440,9 @@ namespace System.Management.Automation
         /// VerbosePreference shell variable
         /// or the -Verbose and -Debug command-line options.
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteDebug(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteWarning(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteProgress(ProgressRecord)"/>
+        /// <seealso cref="WriteDebug(string)"/>
+        /// <seealso cref="WriteWarning(string)"/>
+        /// <seealso cref="WriteProgress(ProgressRecord)"/>
         public void WriteVerbose(string text)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -450,7 +450,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteVerbose(text);
                 else
-                    throw new System.NotImplementedException("WriteVerbose");
+                    throw new NotImplementedException("WriteVerbose");
             }
         }
 
@@ -458,13 +458,13 @@ namespace System.Management.Automation
         /// Display warning information.
         /// </summary>
         /// <param name="text">Warning output.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteWarning may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -477,9 +477,9 @@ namespace System.Management.Automation
         /// WarningPreference shell variable
         /// or the -Verbose and -Debug command-line options.
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteDebug(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteVerbose(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteProgress(ProgressRecord)"/>
+        /// <seealso cref="WriteDebug(string)"/>
+        /// <seealso cref="WriteVerbose(string)"/>
+        /// <seealso cref="WriteProgress(ProgressRecord)"/>
         public void WriteWarning(string text)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -487,7 +487,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteWarning(text);
                 else
-                    throw new System.NotImplementedException("WriteWarning");
+                    throw new NotImplementedException("WriteWarning");
             }
         }
 
@@ -495,13 +495,13 @@ namespace System.Management.Automation
         /// Write text into pipeline execution log.
         /// </summary>
         /// <param name="text">Text to be written to log.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteWarning may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -514,9 +514,9 @@ namespace System.Management.Automation
         /// If LogPipelineExecutionDetail is turned on, this information will be written
         /// to monad log under log category "Pipeline execution detail"
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteDebug(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteVerbose(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteProgress(ProgressRecord)"/>
+        /// <seealso cref="WriteDebug(string)"/>
+        /// <seealso cref="WriteVerbose(string)"/>
+        /// <seealso cref="WriteProgress(ProgressRecord)"/>
         public void WriteCommandDetail(string text)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -524,7 +524,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteCommandDetail(text);
                 else
-                    throw new System.NotImplementedException("WriteCommandDetail");
+                    throw new NotImplementedException("WriteCommandDetail");
             }
         }
 
@@ -532,13 +532,13 @@ namespace System.Management.Automation
         /// Display progress information.
         /// </summary>
         /// <param name="progressRecord">Progress information.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteProgress may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -553,9 +553,9 @@ namespace System.Management.Automation
         /// be displayed, although this can be configured with the
         /// ProgressPreference shell variable.
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteDebug(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteWarning(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteVerbose(string)"/>
+        /// <seealso cref="WriteDebug(string)"/>
+        /// <seealso cref="WriteWarning(string)"/>
+        /// <seealso cref="WriteVerbose(string)"/>
         public void WriteProgress(ProgressRecord progressRecord)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -563,7 +563,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteProgress(progressRecord);
                 else
-                    throw new System.NotImplementedException("WriteProgress");
+                    throw new NotImplementedException("WriteProgress");
             }
         }
 
@@ -576,7 +576,7 @@ namespace System.Management.Automation
         /// <param name="progressRecord">
         /// Progress status to be displayed
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
@@ -585,31 +585,31 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         internal void WriteProgress(
-            Int64 sourceId,
+            long sourceId,
             ProgressRecord progressRecord)
         {
             if (commandRuntime != null)
                 commandRuntime.WriteProgress(sourceId, progressRecord);
             else
-                throw new System.NotImplementedException("WriteProgress");
+                throw new NotImplementedException("WriteProgress");
         }
 
         /// <summary>
         /// Display debug information.
         /// </summary>
         /// <param name="text">Debug output.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteDebug may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -624,13 +624,13 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteVerbose(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteWarning(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.WriteProgress(ProgressRecord)"/>
+        /// <seealso cref="WriteVerbose(string)"/>
+        /// <seealso cref="WriteWarning(string)"/>
+        /// <seealso cref="WriteProgress(ProgressRecord)"/>
         public void WriteDebug(string text)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -638,7 +638,7 @@ namespace System.Management.Automation
                 if (commandRuntime != null)
                     commandRuntime.WriteDebug(text);
                 else
-                    throw new System.NotImplementedException("WriteDebug");
+                    throw new NotImplementedException("WriteDebug");
             }
         }
 
@@ -650,13 +650,13 @@ namespace System.Management.Automation
         /// Any tags to be associated with the message data. These can later be used to filter
         /// or separate objects being sent to the host.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteInformation may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -671,9 +671,9 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         public void WriteInformation(object messageData, string[] tags)
         {
@@ -682,10 +682,10 @@ namespace System.Management.Automation
                 var commandRuntime2 = commandRuntime as ICommandRuntime2;
                 if (commandRuntime2 != null)
                 {
-                    string source = this.MyInvocation.PSCommandPath;
+                    string source = MyInvocation.PSCommandPath;
                     if (string.IsNullOrEmpty(source))
                     {
-                        source = this.MyInvocation.MyCommand.Name;
+                        source = MyInvocation.MyCommand.Name;
                     }
 
                     InformationRecord informationRecord = new InformationRecord(messageData, source);
@@ -699,7 +699,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    throw new System.NotImplementedException("WriteInformation");
+                    throw new NotImplementedException("WriteInformation");
                 }
             }
         }
@@ -708,13 +708,13 @@ namespace System.Management.Automation
         /// Route information to the user or host.
         /// </summary>
         /// <param name="informationRecord">The information record to write.</param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// WriteInformation may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -729,9 +729,9 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         public void WriteInformation(InformationRecord informationRecord)
         {
@@ -744,7 +744,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    throw new System.NotImplementedException("WriteInformation");
+                    throw new NotImplementedException("WriteInformation");
                 }
             }
         }
@@ -762,13 +762,13 @@ namespace System.Management.Automation
         /// Name of the target resource being acted upon. This will
         /// potentially be displayed to the user.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldProcess may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -795,11 +795,11 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire,
-        /// <see cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
+        /// <see cref="Cmdlet.ShouldProcess(string)"/>
         /// will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         /// <example>
         ///     <snippet Code="C#">
@@ -827,11 +827,11 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string,out ShouldProcessReason)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string,ref bool,ref bool)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string,out ShouldProcessReason)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string,ref bool,ref bool)"/>
         public bool ShouldProcess(string target)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -860,13 +860,13 @@ namespace System.Management.Automation
         /// Name of the action which is being performed. This will
         /// potentially be displayed to the user. (default is Cmdlet name)
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldProcess may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -893,9 +893,9 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         /// <example>
         ///     <snippet Code="C#">
@@ -923,11 +923,11 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string,out ShouldProcessReason)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string,ref bool,ref bool)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string,out ShouldProcessReason)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string,ref bool,ref bool)"/>
         public bool ShouldProcess(string target, string action)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -964,13 +964,13 @@ namespace System.Management.Automation
         /// if the user is prompted whether or not to perform the action.
         /// <paramref name="caption"/> may be displayed by some hosts, but not all.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldProcess may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -997,9 +997,9 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         /// <example>
         ///     <snippet Code="C#">
@@ -1030,11 +1030,11 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string,out ShouldProcessReason)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string,ref bool,ref bool)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string,out ShouldProcessReason)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string,ref bool,ref bool)"/>
         public bool ShouldProcess(
             string verboseDescription,
             string verboseWarning,
@@ -1077,16 +1077,16 @@ namespace System.Management.Automation
         /// <param name="shouldProcessReason">
         /// Indicates the reason(s) why ShouldProcess returned what it returned.
         /// Only the reasons enumerated in
-        /// <see cref="System.Management.Automation.ShouldProcessReason"/>
+        /// <see cref="ShouldProcessReason"/>
         /// are returned.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldProcess may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -1113,9 +1113,9 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire, this method will throw
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
-        /// <see cref="System.Management.Automation.ActionPreferenceStopException"/>,
+        /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
         /// <example>
         ///     <snippet Code="C#">
@@ -1148,11 +1148,11 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string,ref bool,ref bool)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string,ref bool,ref bool)"/>
         public bool ShouldProcess(
             string verboseDescription,
             string verboseWarning,
@@ -1190,13 +1190,13 @@ namespace System.Management.Automation
         /// when the user is prompted whether or not to perform the action.
         /// It may be displayed by some hosts, but not all.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldContinue may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -1280,10 +1280,10 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string,ref bool,ref bool)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string,ref bool,ref bool)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
         public bool ShouldContinue(string query, string caption)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
@@ -1319,13 +1319,13 @@ namespace System.Management.Automation
         /// true iff user selects NoToAll.  If this is already true,
         /// ShouldContinue will bypass the prompt and return false.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldContinue may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -1414,10 +1414,10 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
         public bool ShouldContinue(
             string query, string caption, ref bool yesToAll, ref bool noToAll)
@@ -1459,13 +1459,13 @@ namespace System.Management.Automation
         /// true iff user selects NoToAll.  If this is already true,
         /// ShouldContinue will bypass the prompt and return false.
         /// </param>
-        /// <exception cref="System.Management.Automation.PipelineStoppedException">
+        /// <exception cref="PipelineStoppedException">
         /// The pipeline has already been terminated, or was terminated
         /// during the execution of this method.
         /// The Cmdlet should generally just allow PipelineStoppedException
         /// to percolate up to the caller of ProcessRecord etc.
         /// </exception>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// Not permitted at this time or from this thread.
         /// ShouldContinue may only be called during a call to this Cmdlet's
         /// implementation of ProcessRecord, BeginProcessing or EndProcessing,
@@ -1554,10 +1554,10 @@ namespace System.Management.Automation
         ///         }
         ///     </snippet>
         /// </example>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldContinue(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string)"/>
-        /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string)"/>
+        /// <seealso cref="ShouldContinue(string,string)"/>
+        /// <seealso cref="ShouldProcess(string)"/>
+        /// <seealso cref="ShouldProcess(string,string)"/>
+        /// <seealso cref="ShouldProcess(string,string,string)"/>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
         public bool ShouldContinue(
             string query, string caption, bool hasSecurityImpact, ref bool yesToAll, ref bool noToAll)
@@ -1594,18 +1594,18 @@ namespace System.Management.Automation
             {
                 string msg = CommandBaseStrings.CannotInvokePSCmdletsDirectly;
 
-                throw new System.InvalidOperationException(msg);
+                throw new InvalidOperationException(msg);
             }
 
             var result = new List<object>();
-            if (this.commandRuntime == null)
+            if (commandRuntime == null)
             {
-                this.CommandRuntime = new DefaultCommandRuntime(result);
+                CommandRuntime = new DefaultCommandRuntime(result);
             }
 
-            this.BeginProcessing();
-            this.ProcessRecord();
-            this.EndProcessing();
+            BeginProcessing();
+            ProcessRecord();
+            EndProcessing();
 
             return result;
         }
@@ -1617,7 +1617,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                List<object> data = this.GetResults();
+                List<object> data = GetResults();
                 for (int i = 0; i < data.Count; i++)
                     yield return data[i];
             }
@@ -1633,7 +1633,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                List<object> data = this.GetResults();
+                List<object> data = GetResults();
                 for (int i = 0; i < data.Count; i++)
                     yield return (T)data[i];
             }
@@ -1654,7 +1654,7 @@ namespace System.Management.Automation
                     return commandRuntime.TransactionAvailable();
                 else
 #pragma warning suppress 56503
-                    throw new System.NotImplementedException("TransactionAvailable");
+                    throw new NotImplementedException("TransactionAvailable");
             }
         }
 
@@ -1672,7 +1672,7 @@ namespace System.Management.Automation
                 else
                     // We want to throw in this situation, and want to use a
                     // property because it mimics the C# using(TransactionScope ...) syntax
-                    throw new System.NotImplementedException("CurrentPSTransaction");
+                    throw new NotImplementedException("CurrentPSTransaction");
             }
         }
         #endregion Transaction Support
@@ -1688,31 +1688,31 @@ namespace System.Management.Automation
         /// always
         /// </exception>
         /// <remarks>
-        /// <see cref="System.Management.Automation.Cmdlet.ThrowTerminatingError"/>
+        /// <see cref="ThrowTerminatingError"/>
         /// terminates the command, where
-        /// <see cref="System.Management.Automation.ICommandRuntime.WriteError"/>
+        /// <see cref="ICommandRuntime.WriteError"/>
         /// allows the command to continue.
         ///
         /// The cmdlet can also terminate the command by simply throwing
         /// any exception.  When the cmdlet's implementation of
-        /// <see cref="System.Management.Automation.Cmdlet.ProcessRecord"/>,
-        /// <see cref="System.Management.Automation.Cmdlet.BeginProcessing"/> or
-        /// <see cref="System.Management.Automation.Cmdlet.EndProcessing"/>
+        /// <see cref="ProcessRecord"/>,
+        /// <see cref="BeginProcessing"/> or
+        /// <see cref="EndProcessing"/>
         /// throws an exception, the Engine will always catch the exception
         /// and report it as a terminating error.
         /// However, it is preferred for the cmdlet to call
-        /// <see cref="System.Management.Automation.Cmdlet.ThrowTerminatingError"/>,
+        /// <see cref="ThrowTerminatingError"/>,
         /// so that the additional information in
-        /// <see cref="System.Management.Automation.ErrorRecord"/>
+        /// <see cref="ErrorRecord"/>
         /// is available.
-        /// <see cref="System.Management.Automation.Cmdlet.ThrowTerminatingError"/>
+        /// <see cref="ThrowTerminatingError"/>
         /// always throws
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>,
+        /// <see cref="PipelineStoppedException"/>,
         /// regardless of what error was specified in <paramref name="errorRecord"/>.
         /// The Cmdlet should generally just allow
-        /// <see cref="System.Management.Automation.PipelineStoppedException"/>.
+        /// <see cref="PipelineStoppedException"/>.
         /// to percolate up to the caller of
-        /// <see cref="System.Management.Automation.Cmdlet.ProcessRecord"/>.
+        /// <see cref="ProcessRecord"/>.
         /// etc.
         /// </remarks>
         public void ThrowTerminatingError(ErrorRecord errorRecord)
@@ -1732,7 +1732,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    throw new System.InvalidOperationException(errorRecord.ToString());
+                    throw new InvalidOperationException(errorRecord.ToString());
                 }
             }
         }
@@ -1813,7 +1813,7 @@ namespace System.Management.Automation
     /// This describes the reason why ShouldProcess returned what it returned.
     /// Not all possible reasons are covered.
     /// </summary>
-    /// <seealso cref="System.Management.Automation.Cmdlet.ShouldProcess(string,string,string,out ShouldProcessReason)"/>
+    /// <seealso cref="Cmdlet.ShouldProcess(string,string,string,out ShouldProcessReason)"/>
     [Flags]
     public enum ShouldProcessReason
     {
