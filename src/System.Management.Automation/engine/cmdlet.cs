@@ -134,24 +134,22 @@ namespace System.Management.Automation
         /// </exception>
         internal override void DoBeginProcessing()
         {
-            if (CommandRuntime is MshCommandRuntime mshRuntime)
+            if (CommandRuntime is MshCommandRuntime mshRuntime
+                && mshRuntime.UseTransaction
+                && !Context.TransactionManager.HasTransaction)
             {
-                if (mshRuntime.UseTransaction &&
-                   (!Context.TransactionManager.HasTransaction))
+                string error = TransactionStrings.NoTransactionStarted;
+
+                if (Context.TransactionManager.IsLastTransactionCommitted)
                 {
-                    string error = TransactionStrings.NoTransactionStarted;
-
-                    if (Context.TransactionManager.IsLastTransactionCommitted)
-                    {
-                        error = TransactionStrings.NoTransactionStartedFromCommit;
-                    }
-                    else if (Context.TransactionManager.IsLastTransactionRolledBack)
-                    {
-                        error = TransactionStrings.NoTransactionStartedFromRollback;
-                    }
-
-                    throw new InvalidOperationException(error);
+                    error = TransactionStrings.NoTransactionStartedFromCommit;
                 }
+                else if (Context.TransactionManager.IsLastTransactionRolledBack)
+                {
+                    error = TransactionStrings.NoTransactionStartedFromRollback;
+                }
+
+                throw new InvalidOperationException(error);
             }
 
             BeginProcessing();
@@ -870,10 +868,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldProcess(target);
-                else
-                    return true;
+                return commandRuntime?.ShouldProcess(target) ?? true;
             }
         }
 
@@ -966,10 +961,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldProcess(target, action);
-                else
-                    return true;
+                return commandRuntime?.ShouldProcess(target, action) ?? true;
             }
         }
 
@@ -1076,10 +1068,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldProcess(verboseDescription, verboseWarning, caption);
-                else
-                    return true;
+                return commandRuntime?.ShouldProcess(verboseDescription, verboseWarning, caption) ?? true;
             }
         }
 
@@ -1195,13 +1184,9 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldProcess(verboseDescription, verboseWarning, caption, out shouldProcessReason);
-                else
-                {
-                    shouldProcessReason = ShouldProcessReason.None;
-                    return true;
-                }
+                shouldProcessReason = ShouldProcessReason.None;
+                return commandRuntime?.ShouldProcess(verboseDescription, verboseWarning, caption, out shouldProcessReason)
+                    ?? true;
             }
         }
 
@@ -1322,10 +1307,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldContinue(query, caption);
-                else
-                    return true;
+                return commandRuntime?.ShouldContinue(query, caption) ?? true;
             }
         }
 
@@ -1458,10 +1440,7 @@ namespace System.Management.Automation
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
-                if (commandRuntime != null)
-                    return commandRuntime.ShouldContinue(query, caption, ref yesToAll, ref noToAll);
-                else
-                    return true;
+                return commandRuntime?.ShouldContinue(query, caption, ref yesToAll, ref noToAll) ?? true;
             }
         }
 
