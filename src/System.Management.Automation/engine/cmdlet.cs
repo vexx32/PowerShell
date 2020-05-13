@@ -598,9 +598,7 @@ namespace System.Management.Automation
         /// but the command failure will ultimately be
         /// <see cref="ActionPreferenceStopException"/>,
         /// </remarks>
-        internal void WriteProgress(
-            long sourceId,
-            ProgressRecord progressRecord)
+        internal void WriteProgress(long sourceId, ProgressRecord progressRecord)
         {
             if (commandRuntime != null)
             {
@@ -1419,7 +1417,10 @@ namespace System.Management.Automation
         /// <seealso cref="ShouldProcess(string,string,string)"/>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
         public bool ShouldContinue(
-            string query, string caption, ref bool yesToAll, ref bool noToAll)
+            string query,
+            string caption,
+            ref bool yesToAll,
+            ref bool noToAll)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
@@ -1556,7 +1557,11 @@ namespace System.Management.Automation
         /// <seealso cref="ShouldProcess(string,string,string)"/>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
         public bool ShouldContinue(
-            string query, string caption, bool hasSecurityImpact, ref bool yesToAll, ref bool noToAll)
+            string query,
+            string caption,
+            bool hasSecurityImpact,
+            ref bool yesToAll,
+            ref bool noToAll)
         {
             using (PSTransactionManager.GetEngineProtectionScope())
             {
@@ -1571,10 +1576,8 @@ namespace System.Management.Automation
                         return commandRuntime.ShouldContinue(query, caption, ref yesToAll, ref noToAll);
                     }
                 }
-                else
-                {
-                    return true;
-                }
+
+                return true;
             }
         }
 
@@ -1589,9 +1592,7 @@ namespace System.Management.Automation
             // Prevent invocation of things that derive from PSCmdlet.
             if (this is PSCmdlet)
             {
-                string msg = CommandBaseStrings.CannotInvokePSCmdletsDirectly;
-
-                throw new InvalidOperationException(msg);
+                throw new InvalidOperationException(CommandBaseStrings.CannotInvokePSCmdletsDirectly);
             }
 
             var result = new List<object>();
