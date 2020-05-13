@@ -249,10 +249,14 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (string.IsNullOrEmpty(baseName))
-                    throw PSTraceSource.NewArgumentNullException("baseName");
+                {
+                    throw PSTraceSource.NewArgumentNullException(nameof(baseName));
+                }
 
                 if (string.IsNullOrEmpty(resourceId))
-                    throw PSTraceSource.NewArgumentNullException("resourceId");
+                {
+                    throw PSTraceSource.NewArgumentNullException(nameof(resourceId));
+                }
 
                 ResourceManager manager = ResourceManagerCache.GetResourceManager(GetType().Assembly, baseName);
                 string? retValue = null;
@@ -263,12 +267,12 @@ namespace System.Management.Automation
                 }
                 catch (MissingManifestResourceException)
                 {
-                    throw PSTraceSource.NewArgumentException("baseName", GetErrorText.ResourceBaseNameFailure, baseName);
+                    throw PSTraceSource.NewArgumentException(nameof(baseName), GetErrorText.ResourceBaseNameFailure, baseName);
                 }
 
                 if (retValue == null)
                 {
-                    throw PSTraceSource.NewArgumentException("resourceId", GetErrorText.ResourceIdFailure, resourceId);
+                    throw PSTraceSource.NewArgumentException(nameof(resourceId), GetErrorText.ResourceIdFailure, resourceId);
                 }
 
                 return retValue;
@@ -340,9 +344,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteError(errorRecord);
+                }
                 else
-                    throw new NotImplementedException("WriteError");
+                {
+                    throw new NotImplementedException(nameof(WriteError));
+                }
             }
         }
         /// <summary>
@@ -371,9 +379,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteObject(sendToPipeline);
+                }
                 else
-                    throw new NotImplementedException("WriteObject");
+                {
+                    throw new NotImplementedException(nameof(WriteObject));
+                }
             }
         }
         /// <summary>
@@ -407,9 +419,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteObject(sendToPipeline, enumerateCollection);
+                }
                 else
-                    throw new NotImplementedException("WriteObject");
+                {
+                    throw new NotImplementedException(nameof(WriteObject));
+                }
             }
         }
 
@@ -444,9 +460,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteVerbose(text);
+                }
                 else
-                    throw new NotImplementedException("WriteVerbose");
+                {
+                    throw new NotImplementedException(nameof(WriteVerbose));
+                }
             }
         }
 
@@ -481,9 +501,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteWarning(text);
+                }
                 else
-                    throw new NotImplementedException("WriteWarning");
+                {
+                    throw new NotImplementedException(nameof(WriteWarning));
+                }
             }
         }
 
@@ -518,9 +542,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteCommandDetail(text);
+                }
                 else
-                    throw new NotImplementedException("WriteCommandDetail");
+                {
+                    throw new NotImplementedException(nameof(WriteCommandDetail));
+                }
             }
         }
 
@@ -557,9 +585,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteProgress(progressRecord);
+                }
                 else
-                    throw new NotImplementedException("WriteProgress");
+                {
+                    throw new NotImplementedException(nameof(WriteProgress));
+                }
             }
         }
 
@@ -590,9 +622,13 @@ namespace System.Management.Automation
             ProgressRecord progressRecord)
         {
             if (commandRuntime != null)
+            {
                 commandRuntime.WriteProgress(sourceId, progressRecord);
+            }
             else
-                throw new NotImplementedException("WriteProgress");
+            {
+                throw new NotImplementedException(nameof(WriteProgress));
+            }
         }
 
         /// <summary>
@@ -632,9 +668,13 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     commandRuntime.WriteDebug(text);
+                }
                 else
-                    throw new NotImplementedException("WriteDebug");
+                {
+                    throw new NotImplementedException(nameof(WriteDebug));
+                }
             }
         }
 
@@ -683,7 +723,7 @@ namespace System.Management.Automation
                         source = MyInvocation.MyCommand.Name;
                     }
 
-                    InformationRecord informationRecord = new InformationRecord(messageData, source);
+                    var informationRecord = new InformationRecord(messageData, source);
 
                     if (tags != null)
                     {
@@ -694,7 +734,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    throw new NotImplementedException("WriteInformation");
+                    throw new NotImplementedException(nameof(WriteInformation));
                 }
             }
         }
@@ -738,7 +778,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    throw new NotImplementedException("WriteInformation");
+                    throw new NotImplementedException(nameof(WriteInformation));
                 }
             }
         }
@@ -789,7 +829,7 @@ namespace System.Management.Automation
         /// <remarks>
         /// If the pipeline is terminated due to ActionPreference.Stop
         /// or ActionPreference.Inquire,
-        /// <see cref="Cmdlet.ShouldProcess(string)"/>
+        /// <see cref="ShouldProcess(string)"/>
         /// will throw
         /// <see cref="PipelineStoppedException"/>,
         /// but the command failure will ultimately be
@@ -1570,7 +1610,9 @@ namespace System.Management.Automation
                     }
                 }
                 else
+                {
                     return true;
+                }
             }
         }
 
@@ -1612,7 +1654,9 @@ namespace System.Management.Automation
             {
                 List<object> data = GetResults();
                 for (int i = 0; i < data.Count; i++)
+                {
                     yield return data[i];
+                }
             }
         }
 
@@ -1628,7 +1672,9 @@ namespace System.Management.Automation
             {
                 List<object> data = GetResults();
                 for (int i = 0; i < data.Count; i++)
+                {
                     yield return (T)data[i];
+                }
             }
         }
 
@@ -1644,10 +1690,14 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (commandRuntime != null)
+                {
                     return commandRuntime.TransactionAvailable();
+                }
                 else
+                {
 #pragma warning suppress 56503
-                    throw new NotImplementedException("TransactionAvailable");
+                    throw new NotImplementedException(nameof(TransactionAvailable));
+                }
             }
         }
 
@@ -1713,7 +1763,9 @@ namespace System.Management.Automation
             using (PSTransactionManager.GetEngineProtectionScope())
             {
                 if (errorRecord == null)
-                    throw new ArgumentNullException("errorRecord");
+                {
+                    throw new ArgumentNullException(nameof(errorRecord));
+                }
 
                 if (commandRuntime != null)
                 {
