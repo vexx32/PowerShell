@@ -1398,7 +1398,7 @@ namespace System.Management.Automation
                 && !methods[0].hasVarArgs
                 // generic methods need to be double checked in a loop below - generic methods can be rejected if type inference fails
                 && !methods[0].isGeneric
-                && (methods[0].method == null || !(methods[0].method.DeclaringType.IsGenericTypeDefinition))
+                && (methods[0].method is null || !(methods[0].method.DeclaringType.IsGenericTypeDefinition))
                 && methods[0].parameters.Length == arguments.Length)
             {
                 return methods[0];
@@ -1411,7 +1411,7 @@ namespace System.Management.Automation
             {
                 MethodInformation method = methods[i];
 
-                if (method.method != null && method.method.DeclaringType.IsGenericTypeDefinition
+                if (method.method is not null && method.method.DeclaringType.IsGenericTypeDefinition
                     || !method.isGeneric && genericParameters.Length > 0)
                 {
                     // If method is defined by an *open* generic type, or
@@ -1438,7 +1438,7 @@ namespace System.Management.Automation
                         }
                     }
 
-                    if (genericParameters?.Length > 0 && method.method is MethodInfo originalMethod)
+                    if (genericParameters.Length > 0 && method.method is MethodInfo originalMethod)
                     {
                         try
                         {

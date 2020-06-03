@@ -1920,7 +1920,7 @@ namespace System.Management.Automation
         {
             MethodTargetType = methodTargetType;
             _parameterTypes = parameterTypes;
-            GenericTypeParameters = genericTypeParameters?.ToArray() ?? Array.Empty<Type>();
+            GenericTypeParameters = genericTypeParameters ?? Array.Empty<Type>();
         }
 
         /// <remarks>
@@ -1938,7 +1938,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Gets the generic type parameters for the method invocation.
         /// </summary>
-        public Type[] GenericTypeParameters { get; private set; }
+        public Type[] GenericTypeParameters { get; }
 
         internal static bool EqualsForCollection<T>(ICollection<T> xs, ICollection<T> ys)
         {

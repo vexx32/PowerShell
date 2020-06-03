@@ -7879,7 +7879,7 @@ namespace System.Management.Automation.Language
             ExpressionAst expression,
             CommandElementAst member,
             bool @static,
-            IEnumerable<ITypeName> genericTypes = null)
+            IList<ITypeName> genericTypes = null)
             : base(extent)
         {
             if (expression == null || member == null)
@@ -7892,11 +7892,7 @@ namespace System.Management.Automation.Language
             this.Member = member;
             SetParent(member);
             this.Static = @static;
-
-            if (genericTypes?.Any() == true)
-            {
-                this.GenericTypeArguments = new ReadOnlyCollection<ITypeName>(genericTypes.ToArray());
-            }
+            this.GenericTypeArguments = new ReadOnlyCollection<ITypeName>(genericTypes ?? Array.Empty<ITypeName>());
         }
 
         /// <summary>
@@ -7920,7 +7916,7 @@ namespace System.Management.Automation.Language
             CommandElementAst member,
             bool @static,
             bool nullConditional,
-            IEnumerable<ITypeName> genericTypes = null)
+            IList<ITypeName> genericTypes = null)
             : this(extent, expression, member, @static, genericTypes)
         {
             this.NullConditional = nullConditional;
@@ -7949,7 +7945,7 @@ namespace System.Management.Automation.Language
         /// <summary>
         /// List of generic type arguments passed to this member.
         /// </summary>
-        public ReadOnlyCollection<ITypeName> GenericTypeArguments { get; private set; }
+        public ReadOnlyCollection<ITypeName> GenericTypeArguments { get; }
 
         /// <summary>
         /// Copy the MemberExpressionAst instance.
@@ -8023,7 +8019,7 @@ namespace System.Management.Automation.Language
             CommandElementAst method,
             IEnumerable<ExpressionAst> arguments,
             bool @static,
-            IEnumerable<ITypeName> genericTypes = null)
+            IList<ITypeName> genericTypes = null)
             : base(extent, expression, method, @static, genericTypes)
         {
             if (arguments != null && arguments.Any())
@@ -8058,7 +8054,7 @@ namespace System.Management.Automation.Language
             IEnumerable<ExpressionAst> arguments,
             bool @static,
             bool nullConditional,
-            IEnumerable<ITypeName> genericTypes = null)
+            IList<ITypeName> genericTypes = null)
             : this(extent, expression, method, arguments, @static, genericTypes)
         {
             this.NullConditional = nullConditional;
