@@ -2017,9 +2017,9 @@ namespace System.Management.Automation
             {
                 int result = 61;
 
-                result = result * 397 + (MethodTargetType != null ? MethodTargetType.GetHashCode() : 0);
-                result = result * 397 + ParameterTypes.SequenceGetHashCode();
-                result = result * 397 + GenericTypeParameters.SequenceGetHashCode();
+                result = (result * 397) + (MethodTargetType != null ? MethodTargetType.GetHashCode() : 0);
+                result = (result * 397) + ParameterTypes.SequenceGetHashCode();
+                result = (result * 397) + GenericTypeParameters.SequenceGetHashCode();
 
                 return result;
             }
@@ -5062,14 +5062,15 @@ namespace System.Management.Automation
         /// <summary>
         /// Enumerable for this class.
         /// </summary>
+        /// <typeparam name="S">The <see cref="PSMemberInfo"/> type to enumerate over.</typeparam>
         internal struct Enumerator<S> : IEnumerator<S> where S : PSMemberInfo
         {
+            private readonly PSMemberInfoInternalCollection<S> _allMembers;
             private S _current;
             private int _currentIndex;
-            private readonly PSMemberInfoInternalCollection<S> _allMembers;
 
             /// <summary>
-            /// Constructs this instance to enumerate over members.
+            /// Initializes a new instance of the <see cref="Enumerator{S}"/> class to enumerate over members.
             /// </summary>
             /// <param name="integratingCollection">Members we are enumerating.</param>
             internal Enumerator(PSMemberInfoIntegratingCollection<S> integratingCollection)
@@ -5097,8 +5098,8 @@ namespace System.Management.Automation
             /// Moves to the next element in the enumeration.
             /// </summary>
             /// <returns>
-            /// false if there are no more elements to enumerate
-            /// true otherwise
+            /// If there are no more elements to enumerate, returns false.
+            /// Returns true otherwise.
             /// </returns>
             public bool MoveNext()
             {
@@ -5127,7 +5128,7 @@ namespace System.Management.Automation
             }
 
             /// <summary>
-            /// Current PSMemberInfo in the enumeration.
+            /// Gets the current PSMemberInfo in the enumeration.
             /// </summary>
             /// <exception cref="ArgumentException">For invalid arguments.</exception>
             S IEnumerator<S>.Current

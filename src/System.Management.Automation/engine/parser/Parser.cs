@@ -1429,7 +1429,7 @@ namespace System.Management.Automation.Language
             return typeName;
         }
 
-        private List<ITypeName> GenericTypeArgumentsRule(Token firstToken, bool unBracketedGenericArg, out Token lastToken)
+        private List<ITypeName> GenericTypeArgumentsRule(Token firstToken, bool unbracketedGenericArg, out Token lastToken)
         {
             Diagnostics.Assert(firstToken.Kind == TokenKind.Identifier || firstToken.Kind == TokenKind.LBracket, "unexpected first token");
             RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -1471,9 +1471,9 @@ namespace System.Management.Automation.Language
             return genericArguments;
         }
 
-        private ITypeName GenericTypeNameRule(Token genericTypeName, Token firstToken, bool unBracketedGenericArg)
+        private ITypeName GenericTypeNameRule(Token genericTypeName, Token firstToken, bool unbracketedGenericArg)
         {
-            List<ITypeName> genericArguments = GenericTypeArgumentsRule(firstToken, unBracketedGenericArg, out Token rBracketToken);
+            List<ITypeName> genericArguments = GenericTypeArgumentsRule(firstToken, unbracketedGenericArg, out Token rBracketToken);
 
             if (rBracketToken.Kind != TokenKind.RBracket)
             {
@@ -1500,13 +1500,14 @@ namespace System.Management.Automation.Language
                 return CompleteArrayTypeName(result, openGenericType, NextToken());
             }
 
-            if (token.Kind == TokenKind.Comma && !unBracketedGenericArg)
+            if (token.Kind == TokenKind.Comma && !unbracketedGenericArg)
             {
                 SkipToken();
                 string assemblyNameSpec = _tokenizer.GetAssemblyNameSpec();
                 if (string.IsNullOrEmpty(assemblyNameSpec))
                 {
-                    ReportError(After(token),
+                    ReportError(
+                        After(token),
                         nameof(ParserStrings.MissingAssemblyNameSpecification),
                         ParserStrings.MissingAssemblyNameSpecification);
                 }
@@ -7701,10 +7702,10 @@ namespace System.Management.Automation.Language
                 member = GetSingleCommandArgument(CommandArgumentContext.CommandArgument) ??
                     new ErrorExpressionAst(ExtentOf(targetExpr, operatorToken));
             }
-            // Member name may be an incomplete token like `$a.$(Command-Name`; do not look for generic args or
-            // invocation token(s) if the member name token is recognisably incomplete.
             else if (_ungotToken == null)
             {
+                // Member name may be an incomplete token like `$a.$(Command-Name`; we do not look for generic args or
+                // invocation token(s) if the member name token is recognisably incomplete.
                 genericTypeArguments = GenericMethodArgumentsRule(out rBracket);
                 Token lParen = NextInvokeMemberToken();
 
@@ -7764,7 +7765,7 @@ namespace System.Management.Automation.Language
                 if (firstToken.Kind == TokenKind.Identifier || firstToken.Kind == TokenKind.LBracket)
                 {
                     resyncIndex = -1;
-                    genericTypes = GenericTypeArgumentsRule(firstToken, unBracketedGenericArg: false, out rBracketToken);
+                    genericTypes = GenericTypeArgumentsRule(firstToken, unbracketedGenericArg: false, out rBracketToken);
 
                     if (rBracketToken.Kind != TokenKind.RBracket)
                     {
@@ -7802,7 +7803,6 @@ namespace System.Management.Automation.Language
             // G  invoke-param-list:
             // G      '('   invoke-param-paren-list
             // G      script-block
-
             IScriptExtent lastExtent = null;
 
             List<ExpressionAst> arguments;
@@ -7813,6 +7813,7 @@ namespace System.Management.Automation.Language
             else
             {
                 arguments = new List<ExpressionAst>();
+
                 // handle the construct $x.methodName{2+2} as through it had been written $x.methodName({2+2})
                 SkipNewlines();
                 ExpressionAst argument = ScriptBlockExpressionRule(lBracket);

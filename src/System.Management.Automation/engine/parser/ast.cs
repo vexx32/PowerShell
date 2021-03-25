@@ -7859,7 +7859,7 @@ namespace System.Management.Automation.Language
     public class MemberExpressionAst : ExpressionAst, ISupportsAssignment
     {
         /// <summary>
-        /// Construct an ast to reference a property.
+        /// Initializes a new instance of the <see cref="MemberExpressionAst"/> class.
         /// </summary>
         /// <param name="extent">
         /// The extent of the expression, starting with the expression before the operator '.' or '::' and ending after
@@ -7943,7 +7943,7 @@ namespace System.Management.Automation.Language
         public bool NullConditional { get; protected set; }
 
         /// <summary>
-        /// List of generic type arguments passed to this member.
+        /// Gets a list of generic type arguments passed to this member.
         /// </summary>
         public ReadOnlyCollection<ITypeName> GenericTypeArguments { get; }
 
@@ -7997,7 +7997,7 @@ namespace System.Management.Automation.Language
     public class InvokeMemberExpressionAst : MemberExpressionAst, ISupportsAssignment
     {
         /// <summary>
-        /// Construct an instance of a method invocation expression.
+        /// Initializes a new instance of the <see cref="InvokeMemberExpressionAst"/> class.
         /// </summary>
         /// <param name="extent">
         /// The extent of the expression, starting with the expression before the invocation operator and ending with the
