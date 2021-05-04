@@ -1264,7 +1264,7 @@ namespace System.Management.Automation.Language
                         }
                     }
 
-                    if (!(rdp.ParameterType == typeof(SwitchParameter)))
+                    if (rdp.ParameterType != typeof(SwitchParameter))
                     {
                         paramAttribute.Position = pos++;
                     }
@@ -2616,6 +2616,9 @@ namespace System.Management.Automation.Language
             {
                 if (rootForDefiningTypesAndUsings.UsingStatements.Count > 0)
                 {
+                    // This is a more efficient equivalent of:
+                    //     rootForDefiningTypesAndUsings.UsingStatements.All(
+                    //         x => x.UsingStatementKind == UsingStatementKind.Namespace)
                     bool allUsingsAreNamespaces = true;
                     for (int index = 0; index < rootForDefiningTypesAndUsings.UsingStatements.Count; index++)
                     {
@@ -2631,7 +2634,7 @@ namespace System.Management.Automation.Language
                 }
 
                 var typeAstList = new List<TypeDefinitionAst>();
-                foreach (var ast in rootForDefiningTypesAndUsings.FindAll(ast => ast is TypeDefinitionAst, searchNestedScriptBlocks: true))
+                foreach (TypeDefinitionAst ast in rootForDefiningTypesAndUsings.FindAll(ast => ast is TypeDefinitionAst, searchNestedScriptBlocks: true))
                 {
                     typeAstList.Add((TypeDefinitionAst)ast);
                 }
@@ -2651,12 +2654,11 @@ namespace System.Management.Automation.Language
                 }
             }
 
-            var asts = rootForDefiningTypesAndUsings.FindAll(ast => ast is TypeDefinitionAst, searchNestedScriptBlocks: false);
+            IEnumerable<Ast> asts = rootForDefiningTypesAndUsings.FindAll(ast => ast is TypeDefinitionAst, searchNestedScriptBlocks: false);
             var typesToAddToScope = new Dictionary<string, TypeDefinitionAst>();
 
-            foreach (Ast ast in asts)
+            foreach (TypeDefinitionAst typeDef in asts)
             {
-                var typeDef = (TypeDefinitionAst)ast;
                 typesToAddToScope[typeDef.Name] = typeDef;
             }
 
@@ -6233,7 +6235,7 @@ namespace System.Management.Automation.Language
                 {
                     // We'll wrap the variable in a PSReference, but not the constant variables ($true, $false, $null) because those
                     // can't be changed.
-                    var varType = varExpr.GetVariableType(this, out _, out _);
+                    Type varType = varExpr.GetVariableType(this, out _, out _);
                     return Expression.Call(
                         CachedReflectionInfo.VariableOps_GetVariableAsRef,
                         Expression.Constant(varExpr.VariablePath),
