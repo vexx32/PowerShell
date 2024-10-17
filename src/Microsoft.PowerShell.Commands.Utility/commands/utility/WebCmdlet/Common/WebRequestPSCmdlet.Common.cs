@@ -645,7 +645,8 @@ namespace Microsoft.PowerShell.Commands
                                     int initialCapacity = (int)Math.Min(contentLength ?? StreamHelper.DefaultReadBuffer, StreamHelper.DefaultReadBuffer);
                                     var bufferedStream = new WebResponseContentMemoryStream(responseStream, initialCapacity, this, contentLength, perReadTimeout, _cancelToken.Token);
                                     string error = StreamHelper.DecodeStream(bufferedStream, characterSet, out Encoding encoding, perReadTimeout, _cancelToken.Token);
-                                    detailMsg = FormatErrorMessage(error, contentType);
+                                    detailMsg = FormatErrorMessage(uri, response.StatusCode, error, contentType, out object contentObject);
+                                    httpEx.ResponseContent = contentObject;
                                 }
                                 catch (Exception ex)
                                 {
@@ -1809,9 +1810,10 @@ namespace Microsoft.PowerShell.Commands
             return result;
         }
 
-        private static string FormatErrorMessage(string error, string contentType)
+        private static string FormatErrorMessage(Uri uri, HttpStatusCode statusCode, string error, string contentType, out object contentObject)
         {
-            string formattedError = null;
+            var formattedError = string.Format("{0} - {1} ({2})", (int)statusCode, statusCode, uri);
+            contentObject = null;
 
             try
             {
@@ -1837,26 +1839,26 @@ namespace Microsoft.PowerShell.Commands
                     doc.Save(xmlWriter);
                     string xmlString = stringBuilder.ToString();
 
-                    formattedError = Environment.NewLine + xmlString;
+                    contentObject = doc;
                 }
                 else if (ContentHelper.IsJson(contentType))
                 {
                     JsonNode jsonNode = JsonNode.Parse(error);
                     JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
                     string jsonString = jsonNode.ToJsonString(options);
-
-                    formattedError = Environment.NewLine + jsonString;
+                    
+                    contentObject = jsonNode;
                 }
             }
             catch
             {
                 // Ignore errors
             }
-
+            
             if (string.IsNullOrEmpty(formattedError))
             {
                 // Remove HTML tags making it easier to read
-                formattedError = Regex.Replace(error, "<[^>]*>", string.Empty);
+                contentObject = Regex.Replace(error, "<[^>]*>", string.Empty);
             }
 
             return formattedError;
@@ -1927,5 +1929,7 @@ namespace Microsoft.PowerShell.Commands
         /// HTTP error response.
         /// </summary>
         public HttpResponseMessage Response { get; }
+
+        public object ResponseContent { get; }
     }
 }
