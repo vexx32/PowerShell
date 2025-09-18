@@ -30,13 +30,13 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         [Parameter(Position = 1, ParameterSetName = "Delimiter")]
         [ValidateNotNull]
-        public char Delimiter { get; set; }
+        public virtual char Delimiter { get; set; }
 
         /// <summary>
         /// Culture switch for csv conversion
         /// </summary>
         [Parameter(ParameterSetName = "UseCulture")]
-        public SwitchParameter UseCulture { get; set; }
+        public virtual SwitchParameter UseCulture { get; set; }
 
         /// <summary>
         /// Abstract Property - Input Object which is written in Csv format.
@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.Commands
         /// Gets or sets property that writes csv file with no headers.
         /// </summary>
         [Parameter]
-        public SwitchParameter NoHeader { get; set; }
+        public virtual SwitchParameter NoHeader { get; set; }
 
         #endregion Command Line Parameters
 
@@ -238,9 +238,36 @@ namespace Microsoft.PowerShell.Commands
         private Encoding _encoding = Encoding.Default;
 
         /// <summary>
+        /// Property that sets delimiter.
+        /// </summary>
+        [Parameter(Position = 1, ParameterSetName = "Delimiter")]
+        [Parameter(Position = 1, ParameterSetName = "DelimiterAppend")]
+        [Parameter(Position = 1, ParameterSetName = "DelimiterNoHeader")]
+        [ValidateNotNull]
+        public override char Delimiter { get; set; }
+
+        /// <summary>
+        /// Culture switch for csv conversion
+        /// </summary>
+        [Parameter(ParameterSetName = "UseCulture")]
+        [Parameter(ParameterSetName = "UseCultureAppend")]
+        [Parameter(ParameterSetName = "UseCultureNoHeader")]
+        public override SwitchParameter UseCulture { get; set; }
+
+        /// <summary>
+        /// Gets or sets property that writes csv file with no headers.
+        /// </summary>
+        [Parameter(ParameterSetName = "NoHeader")]
+        [Parameter(ParameterSetName = "DelimiterNoHeader")]
+        [Parameter(ParameterSetName = "UseCultureNoHeader")]
+        public override SwitchParameter NoHeader { get; set; }
+
+        /// <summary>
         /// Gets or sets property that sets append parameter.
         /// </summary>
-        [Parameter]
+        [Parameter(ParameterSetName = "Append")]
+        [Parameter(ParameterSetName = "UseCultureAppend")]
+        [Parameter(ParameterSetName = "DelimiterAppend")]
         public SwitchParameter Append { get; set; }
 
         // true if Append=true AND the file written was not empty (or nonexistent) when the cmdlet was invoked
@@ -959,7 +986,7 @@ namespace Microsoft.PowerShell.Commands
         /// <returns>Converted string.</returns>
         internal string ConvertPropertyNamesCSV(IList<string> propertyNames)
         {
-            ArgumentNullException.ThrowIfNull(propertyNames); 
+            ArgumentNullException.ThrowIfNull(propertyNames);
 
             _outputString.Clear();
             bool first = true;
@@ -994,7 +1021,7 @@ namespace Microsoft.PowerShell.Commands
                             AppendStringWithEscapeAlways(_outputString, propertyName);
                             break;
                         case BaseCsvWritingCommand.QuoteKind.AsNeeded:
-                            
+
                             if (propertyName.AsSpan().IndexOfAny(_delimiter, '\n', '"') != -1)
                             {
                                 AppendStringWithEscapeAlways(_outputString, propertyName);
@@ -1023,7 +1050,7 @@ namespace Microsoft.PowerShell.Commands
         /// <returns></returns>
         internal string ConvertPSObjectToCSV(PSObject mshObject, IList<string> propertyNames)
         {
-            ArgumentNullException.ThrowIfNull(propertyNames); 
+            ArgumentNullException.ThrowIfNull(propertyNames);
 
             _outputString.Clear();
             bool first = true;
@@ -1109,7 +1136,7 @@ namespace Microsoft.PowerShell.Commands
         /// <returns>ToString() value.</returns>
         internal static string GetToStringValueForProperty(PSPropertyInfo property)
         {
-            ArgumentNullException.ThrowIfNull(property); 
+            ArgumentNullException.ThrowIfNull(property);
 
             string value = null;
             try
@@ -1271,7 +1298,7 @@ namespace Microsoft.PowerShell.Commands
 
         internal ImportCsvHelper(PSCmdlet cmdlet, char delimiter, IList<string> header, string typeName, StreamReader streamReader)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet); 
+            ArgumentNullException.ThrowIfNull(cmdlet);
             ArgumentNullException.ThrowIfNull(streamReader);
 
             _cmdlet = cmdlet;
